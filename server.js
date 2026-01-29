@@ -160,10 +160,10 @@ let con=mysql.createPool({
   connectionLimit: 10
 });
 
-con.connect(err=>{
-    if(err) throw err;
-    console.log("Mysql Connected")
-})
+// con.connect(err=>{
+//     if(err) throw err;
+//     console.log("Mysql Connected")
+// })
 
 app.get("/",authenticated,(req,res)=>{
     res.render("home")
