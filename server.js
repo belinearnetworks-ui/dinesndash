@@ -150,12 +150,15 @@ function driver(req,res,next){
   next();
 }
 
-let con=mysql.createConnection({
-    user:'Sizwe',
-    password:'Trigonometry',
-    host:"localhost",
-    database:"dinesndash"
-})
+let con=mysql.createPool({
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10
+});
 
 con.connect(err=>{
     if(err) throw err;
