@@ -12,8 +12,9 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
-    "@capacitor/cli": "^8.0.1",
-    "@capacitor/core": "^8.0.1",
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "crypto": "^1.0.1",
