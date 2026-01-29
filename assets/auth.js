@@ -173,7 +173,7 @@ console.log("You are here: ",Thelocation)
 document.querySelectorAll(".btn-primary").forEach(button=>{
     button.addEventListener("click",e=>{
         e.preventDefault()
-        document.getElementById("loading").style.display="block";
+        // document.getElementById("loading").style.display="block";
     
         console.log("Button clicked")
         let type=button.getAttribute("usertype");

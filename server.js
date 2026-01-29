@@ -481,6 +481,12 @@ app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async 
                 to: Body.UserSignupEmail,
                 subject: "Confirm your DinesNDash Account",
                 html: `<p>Click <a href="http://localhost:4000/auth/api/confirm/password?token=${token}">here</a> to confirm</p>`
+            },err=>{
+              if(err){
+                console.log("Error:",err);
+                return res.json({Status:false,Reason:"Email error"});
+
+              }
             });
 
             console.log("Email sent");
