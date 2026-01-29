@@ -5,7 +5,7 @@ require("dotenv").config();
 const express=require("express");
 const app=express();
 const path=require("path");
-const Server=require("socket.io");
+const {Server}=require("socket.io");
 const http=require("http");
 const mysql=require("mysql2");
 const passport=require("passport");
