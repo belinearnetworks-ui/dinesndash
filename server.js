@@ -444,324 +444,59 @@ const upload=multer({storage,fileFilter:(req,file,cb)=>{
     }
 }});
 
-app.post("/signup/api/auth/:type/:processingcode",upload.single("Logo"),(req,res)=>{
-    console.log("Api recieved");
-    console.log(req.body)
-    console.log(req.params.type)
-    console.log(req.params.processingcode)
-    let ProcessingCode="109283651432930948";
+app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async (req, res) => {
+    try {
+        console.log("API received");
+        const { type, processingcode } = req.params;
+        console.log(req.body, type, processingcode);
 
-    if(req.params.processingcode!==ProcessingCode){
-        return res.sendFile(path.join(__dirname,"assets","error500.html"))
+        if (processingcode !== "109283651432930948") {
+            return res.sendFile(path.join(__dirname,"assets","error500.html"));
+        }
+
+        if(type === "user") {
+            const Body = req.body;
+            if(!Body.user_signup_name || !Body.UserSignupEmail || !Body.UserSignUpPassword){
+                return res.json({Status:false,Reason:"Error 400: Bad request"});
+            }
+
+            console.log("Hashing password...");
+            const HashedPassword = await encrypt.hash(Body.UserSignUpPassword, 10); // promisify bcrypt
+
+            const UserId = uuid.v4();
+            const DateNow = dayjs().format("YYYY-MM-DD");
+            const TimeNow = dayjs().format("HH:mm:ss");
+
+            console.log("Inserting into database...");
+            await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,Body.UserSignupEmail,'0712603907',true,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
+            await con.promise().query("INSERT INTO allusers values(?,?,?,?,?,?,?,?)",[UserId,false,false,Body.UserSignupEmail,false,"0712603907",true,HashedPassword]);
+            console.log("Done updating database. About to send email")
+
+
+            console.log("Generating token and sending email...");
+            const token = jwt.sign({email:Body.UserSignupEmail, Type:"user", ID:UserId}, process.env.JWT_SECRET, {expiresIn:"30m"});
+            
+            await EmailTranspoter.sendMail({
+                from: "futuredlalda33@gmail.com",
+                to: Body.UserSignupEmail,
+                subject: "Confirm your DinesNDash Account",
+                html: `<p>Click <a href="http://localhost:4000/auth/api/confirm/password?token=${token}">here</a> to confirm</p>`
+            });
+
+            console.log("Email sent");
+            return res.json({Status:true});
+
+        } else {
+            return res.json({Status:false, Reason:"Type not supported yet"});
+        }
+
+    } catch(err) {
+        console.error("Signup error:", err);
+        if(err.code === "ER_DUP_ENTRY") {
+            return res.json({Status:false, Reason:"Email already used"});
+        }
+        return res.json({Status:false, Reason:"Server error. Try again later"});
     }
-
-    if(req.params.type=="store"){
-        console.log("We're working on stores now")
-        let Body=req.body;
-        if(Body.store_name==""||Body.StoreTimes.length==0 ||Body.store_signup_password==""||Body.store_signup_email==""){
-            return res.json({Status:false,Reason:"Error 400:Bad request"})
-        }
-
-        console.log("checked for empty inputs and none were found so we will continue")
-        console.log(Body.StoreTimes)
-
-
-        let StoreID=uuid.v4();
-
-        let DateNow=dayjs().format("YYYY-MM-DD")
-        let TimeNow=dayjs().format("HH:mm:ss")
-        
-        try{
-
-            console.log("So we'll now try and insert into the database")
-
-            let filename;
- 
-            if(req.file){
-                console.log("Filename: ",req.file)
-                filename="StoreLogo"+Date.now()+path.extname(req.file.originalname);
-                console.log("file renamed to: ",filename)
-                let Dir=path.join(__dirname,"uploads",filename);
-
-                console.log("About to try and compress the file")
-                sharp(req.file.buffer)
-                .resize({width:250})
-                .jpeg({quality:75})
-                .toFile(Dir)
-            }
-
-            console.log("File compressing done")
-
-            encrypt.hash(Body.store_signup_password,10,async (err,HashedPassword)=>{
-              
-              console.log("So just hashed the password")
-              if(err){
-                  return res.json({Status:false,Reason:"Error. Code:500(Server error). It's not you it's us. Try again later"})
-              }
-              console.log("About to try and update database")
-
-              await con.promise().query("INSERT INTO store_info Values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[StoreID,true,Body.store_name,filename||null,JSON.stringify(Body.StoreTimes),Body.store_signup_email,false,HashedPassword,DateNow,TimeNow,os.type(),req.ip,os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm"),null,null,null]);
-              await con.promise().query("INSERT INTO allusers values(?,?,?,?,?)",[StoreID,true,Body.store_signup_email,false,HashedPassword]);
-               
-              let token=jwt.sign({email:Body.store_signup_email,Type:"store"},process.env.JWT_SECRET,{expiresIn:"30m"});
-       
-              let Mailoptions={
-                  from:"futuredlalda33@gmail.com",
-                  to:Body.store_signup_email,
-                  subject:'Please confirm your DinesNDash Account',
-                  html:`
-                      <!doctype html>
-                      <html lang="en">
-                      <head>
-                        <meta charset="utf-8">
-                        <title>Confirm your account</title>
-                        <meta name="viewport" content="width=device-width,initial-scale=1.0">
-                        <style>
-                          /* Minimal responsive tweak — many clients ignore media queries, but harmless */
-                          @media only screen and (max-width:600px) {
-                            .container { width: 100% !important; }
-                            .stack { display:block !important; width:100% !important; }
-                            .btn { width: 100% !important; box-sizing: border-box; }
-                          }
-                        </style>
-                      </head>
-                      <body style="margin:0;padding:0;background:#ffffff;color:#000000;font-family:Helvetica,Arial,sans-serif;">
-                        <!-- Preheader: invisible in body but useful for email previews -->
-                        <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#ffffff;">
-                          Confirm your email to activate your DinesNDash account.
-                        </div>
-                      
-                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#ffffff;">
-                          <tr>
-                            <td align="center" style="padding:24px;">
-                              <table role="presentation" class="container" cellpadding="0" cellspacing="0" width="600" style="width:600px;max-width:100%;border-collapse:collapse;border:1px solid #000000;">
-                                <!-- Header -->
-                                <tr>
-                                  <td style="padding:24px;text-align:center;border-bottom:1px solid #000000;">
-                                    <!-- Replace with a small logo or plain text brand -->
-                                    <div style="font-weight:700;font-size:20px;letter-spacing:1px;">DinesNDash</div>
-                                    <div style="font-size:12px;color:#333333;margin-top:6px;">Fast food ordering made simple</div>
-                                  </td>
-                                </tr>
-                      
-                                <!-- Body -->
-                                <tr>
-                                  <td style="padding:32px;">
-                                    <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:700;color:#000000;">Confirm your email</h1>
-                                    <p style="margin:0 0 18px 0;color:#111111;line-height:1.5;">
-                                      Hi <strong style="font-weight:600;">${Body.store_name}</strong>,
-                                      <br><br>
-                                      Thanks for creating an account at <strong>DinesNDash</strong>. Please confirm your email address so we can activate your account and get you ordering.
-                                    </p>
-                      
-                                    <!-- Call to action button (black & white) -->
-                                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:18px;">
-                                      <tr>
-                                        <td align="center">
-                                          <a class="btn"
-                                             href="http://localhost:4000/auth/api/confirm/password?token=${token}"
-                                             style="display:inline-block;padding:12px 22px;background:#000000;color:#ffffff;text-decoration:none;font-weight:600;border:1px solid #000000;border-radius:4px;">
-                                            Confirm my email
-                                          </a>
-                                        </td>
-                                      </tr>
-                                    </table>
-                      
-                                    <!-- Fallback link for clients that block buttons -->
-                                    <p style="margin:18px 0 0 0;color:#111111;font-size:14px;line-height:1.4;">
-                                      If the button doesn't work, copy and paste this link into your browser:
-                                      <br>
-                                      <a href="http://localhost:4000/auth/api/confirm/password?token=${token}" style="color:#000000;text-decoration:underline;word-break:break-all;">Confirm Account</a>
-                                    </p>
-                      
-                                    <hr style="border:none;border-top:1px solid #dddddd;margin:22px 0;">
-                      
-                                    <p style="margin:0;color:#666666;font-size:13px;line-height:1.45;">
-                                      This link will expire in <strong>24 hours</strong>. If you didn't create an account, you can safely ignore this message.
-                                    </p>
-                                  </td>
-                                </tr>
-                      
-                                <!-- Footer -->
-                                <tr>
-                                  <td style="padding:18px;text-align:center;font-size:12px;color:#666666;border-top:1px solid #000000;">
-                                    <div style="margin-bottom:6px;">©2025. DinesNDash Holdings or its affiliates</div>
-                                    <div style="color:#999999">If you did not request this, please ignore. Do not reply to this email.</div>
-                                    <div style="margin-top:8px;color:#999999;font-size:11px;"><a href="mailto:services@dinesndash.com">services@dinesndash.com</a></div>
-                                  </td>
-                                </tr>
-                      
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                      </body>
-                      </html>
-                  `
-              }
-              EmailTranspoter.sendMail(Mailoptions,err=>{
-                  if(err){
-                      return res.json({Status:false,Reason:"Server Error:500.Failed to send confirmation Email. Please try again later"})   
-                  }
-                  console.log("email sent")
-                  return res.json({Status:true})
-              })
-                })
-
-        }catch{(err)=>{
-            if(err){
-                if(err.code==="ER_DUP_ENTRY"){
-                    return res.json({Status:false, Reason:"The used Email has been used before. Please choose different one"})
-                }
-                // return res.json({Status:false,Reason:"Error. Code:500(Server error). It's not you it's us. Try again later"}).statusCode(500);
-                throw err;
-            }
-        }}
-    }else if(req.params.type=="user"){
-      console.log("We're working on users Now");
-      let Body=req.body;
-      console.log(Body)
-      console.log("New addition")
-      if(Body.user_signup_name==""||Body.UserSignupEmail==""||Body.UserSignUpPassword==""){
-        console.log("Signup name, signup email or password is '' ");
-        return res.json({Status:false,Reason:"Error 400:Bad request"})
-      }
-
-      console.log("About to enter the hash function")
-
-      encrypt.hash(Body.UserSignUpPassword,10,async (err,HashedPassword)=>{
-        if(err){
-          return res.json({Status:false,Reason:"Server Error(500). Please try again later"})
-        }
-        console.log("We're about to enter try-catch now");
-        try {      
-          let UserId=uuid.v4();
-          console.log("About to update database")
-        
-          await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,Body.UserSignupEmail,'0712603907',true,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
-          await con.promise().query("INSERT INTO allusers values(?,?,?,?,?,?,?,?)",[UserId,false,false,Body.UserSignupEmail,false,"0712603907",true,HashedPassword]);
-          console.log("Done updating database. About to send email")
-          let token=jwt.sign({email:Body.UserSignupEmail,Type:"user",ID:UserId},process.env.JWT_SECRET,{expiresIn:"30m"});
-          let Mailoptions={
-              from:"futuredlalda33@gmail.com",
-              to:Body.UserSignupEmail,
-              subject:'Please confirm your DinesNDash Account',
-              html:`
-                  <!doctype html>
-                  <html lang="en">
-                  <head>
-                    <meta charset="utf-8">
-                    <title>Confirm your account</title>
-                    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-                    <style>
-                      /* Minimal responsive tweak — many clients ignore media queries, but harmless */
-                      @media only screen and (max-width:600px) {
-                        .container { width: 100% !important; }
-                        .stack { display:block !important; width:100% !important; }
-                        .btn { width: 100% !important; box-sizing: border-box; }
-                      }
-                    </style>
-                  </head>
-                  <body style="margin:0;padding:0;background:#ffffff;color:#000000;font-family:Helvetica,Arial,sans-serif;">
-                    <!-- Preheader: invisible in body but useful for email previews -->
-                    <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#ffffff;">
-                      Confirm your email to activate your DinesNDash account.
-                    </div>
-                  
-                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#ffffff;">
-                      <tr>
-                        <td align="center" style="padding:24px;">
-                          <table role="presentation" class="container" cellpadding="0" cellspacing="0" width="600" style="width:600px;max-width:100%;border-collapse:collapse;border:1px solid #000000;">
-                            <!-- Header -->
-                            <tr>
-                              <td style="padding:24px;text-align:center;border-bottom:1px solid #000000;">
-                                <!-- Replace with a small logo or plain text brand -->
-                                <div style="font-weight:700;font-size:20px;letter-spacing:1px;">DinesNDash</div>
-                                <div style="font-size:12px;color:#333333;margin-top:6px;">Fast food ordering made simple</div>
-                              </td>
-                            </tr>
-                  
-                            <!-- Body -->
-                            <tr>
-                              <td style="padding:32px;">
-                                <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:700;color:#000000;">Confirm your email</h1>
-                                <p style="margin:0 0 18px 0;color:#111111;line-height:1.5;">
-                                  Hi <strong style="font-weight:600;">${Body.user_signup_name}</strong>,
-                                  <br><br>
-                                  Thanks for creating an account at <strong>DinesNDash</strong>. Please confirm your email address so we can activate your account and get you ordering.
-                                </p>
-                  
-                                <!-- Call to action button (black & white) -->
-                                <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:18px;">
-                                  <tr>
-                                    <td align="center">
-                                      <a class="btn"
-                                         href="http://localhost:4000/auth/api/confirm/password?token=${token}"
-                                         style="display:inline-block;padding:12px 22px;background:#000000;color:#ffffff;text-decoration:none;font-weight:600;border:1px solid #000000;border-radius:4px;">
-                                        Confirm my email
-                                      </a>
-                                    </td>
-                                  </tr>
-                                </table>
-                  
-                                <!-- Fallback link for clients that block buttons -->
-                                <p style="margin:18px 0 0 0;color:#111111;font-size:14px;line-height:1.4;">
-                                  If the button doesn't work, copy and paste this link into your browser:
-                                  <br>
-                                  <a href="http://localhost:4000/auth/api/confirm/password?token=${token}" style="color:#000000;text-decoration:underline;word-break:break-all;">Confirm Account</a>
-                                </p>
-                  
-                                <hr style="border:none;border-top:1px solid #dddddd;margin:22px 0;">
-                  
-                                <p style="margin:0;color:#666666;font-size:13px;line-height:1.45;">
-                                  This link will expire in <strong>24 hours</strong>. If you didn't create an account, you can safely ignore this message.
-                                </p>
-                              </td>
-                            </tr>
-                  
-                            <!-- Footer -->
-                            <tr>
-                              <td style="padding:18px;text-align:center;font-size:12px;color:#666666;border-top:1px solid #000000;">
-                                <div style="margin-bottom:6px;">©2025. DinesNDash Holdings or its affiliates</div>
-                                <div style="color:#999999">If you did not request this, please ignore. Do not reply to this email.</div>
-                                <div style="margin-top:8px;color:#999999;font-size:11px;"><a href="mailto:services@dinesndash.com">services@dinesndash.com</a></div>
-                              </td>
-                            </tr>
-                  
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </body>
-                  </html>
-              `
-          }
-
-          console.log("Done Creating email options")
-
-          EmailTranspoter.sendMail(Mailoptions,err=>{
-            console.log("Attempting to send email")
-              
-            if(err){
-              return res.json({Status:false,Reason:"Server Error:500.Failed to send confirmation Email. Please try again later"})   
-            }
-  
-            console.log("email sent")
-            return res.json({Status:true})
-          })
-        } catch (error) {
-          if(error){
-            if(error.code==="ER_DUP_ENTRY"){
-              return res.json({Status:false, Reason:"The used Email has been used before. Please choose different one"})
-            }
-          }else{
-            return res.json({Status:false,Reason:"Server Error(500). Please try again later"})
-          }
-          
-        }
-        })
-    }
-
 });
 app.get("/auth/api/confirm/password/",async (req,res)=>{
     let Token=req.query.token;
