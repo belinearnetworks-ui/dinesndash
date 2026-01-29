@@ -638,8 +638,8 @@ app.post("/signup/api/auth/:type/:processingcode",upload.single("Logo"),(req,res
           let UserId=uuid.v4();
           console.log("About to update database")
         
-          await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,Body.UserSignupEmail,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
-          await con.promise().query("INSERT INTO allusers values(?,?,?,?,?)",[UserId,false,Body.UserSignupEmail,false,HashedPassword]);
+          await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,Body.UserSignupEmail,'0712603907',true,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
+          await con.promise().query("INSERT INTO allusers values(?,?,?,?,?,?,?,?)",[UserId,false,false,Body.UserSignupEmail,false,"0712603907",true,HashedPassword]);
           console.log("Done updating database. About to send email")
           let token=jwt.sign({email:Body.UserSignupEmail,Type:"user",ID:UserId},process.env.JWT_SECRET,{expiresIn:"30m"});
           let Mailoptions={
