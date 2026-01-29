@@ -209,7 +209,7 @@ document.querySelectorAll(".btn-primary").forEach(button=>{
                 return 
             }
 
-            fetch(`/signup/api/auth/${type}/${ProcessingCode}`,{
+            fetch(`https://dinesndash.onrender.com/signup/api/auth/${type}/${ProcessingCode}`,{
                 method:"POST",
                 body:formData
             }).then(response=>response.json()).then(data=>{
@@ -248,7 +248,7 @@ document.querySelectorAll(".btn-primary").forEach(button=>{
             }
             
         
-            fetch(`/signup/api/auth/${type}/${ProcessingCode}`,{
+            fetch(`https://dinesndash.onrender.com/signup/api/auth/${type}/${ProcessingCode}`,{
                 method:"POST",
                 body:Data
             }).then(response=>response.json()).then(data=>{
