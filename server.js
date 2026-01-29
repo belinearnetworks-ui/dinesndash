@@ -621,7 +621,7 @@ app.post("/signup/api/auth/:type/:processingcode",upload.single("Logo"),(req,res
       console.log("We're working on users Now");
       let Body=req.body;
       console.log(Body)
-      console.log("New addition")l
+      console.log("New addition")
       if(Body.user_signup_name==""||Body.UserSignupEmail==""||Body.UserSignUpPassword==""){
         console.log("Signup name, signup email or password is '' ");
         return res.json({Status:false,Reason:"Error 400:Bad request"})
