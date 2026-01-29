@@ -475,7 +475,7 @@ app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async 
 
             console.log("Generating token and sending email...");
             const token = jwt.sign({email:Body.UserSignupEmail, Type:"user", ID:UserId}, process.env.JWT_SECRET, {expiresIn:"30m"});
-            
+            console.log("Done generating toke:",token);
             await EmailTranspoter.sendMail({
                 from: "futuredlalda33@gmail.com",
                 to: Body.UserSignupEmail,
