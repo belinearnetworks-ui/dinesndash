@@ -468,7 +468,7 @@ app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async 
             const TimeNow = dayjs().format("HH:mm:ss");
 
             console.log("Inserting into database...");
-            await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,Body.UserSignupEmail,'0712603907',true,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
+            await con.promise().query("INSERT INTO user_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[UserId,false,Body.user_signup_name,false,'0712603907',true,Body.UserSignupEmail,HashedPassword,JSON.stringify(Body.Allergies),dayjs().format("YYYY-MM-DD"),dayjs().format("HH:mm:ss"),os.type(),req.ip,dayjs().format("YYYY-MM-DD HH:mm:ss"),os.type(),req.ip,null,null,null,null]);
             await con.promise().query("INSERT INTO allusers values(?,?,?,?,?,?,?,?)",[UserId,false,false,Body.UserSignupEmail,false,"0712603907",true,HashedPassword]);
             console.log("Done updating database. About to send email")
 
