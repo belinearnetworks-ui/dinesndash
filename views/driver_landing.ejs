@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Orders | Delivery Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+        :root {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --dark: #0f172a;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --white: #ffffff;
+            --sidebar-width: 260px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background-color: var(--gray-50);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-links { list-style: none; padding: 0; margin: 0; }
+        .nav-links li { margin-bottom: 0.5rem; }
+        .nav-links a {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none;
+            border-radius: 0.75rem; font-weight: 600; transition: 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255, 255, 255, 0.1); color: white; }
+        .nav-links a.active { border-left: 4px solid var(--primary); }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1200px;
+        }
+
+        section { margin-bottom: 3rem; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 { font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--dark); }
+        h2 { font-size: 1.1rem; color: var(--gray-600); font-weight: 500; }
+
+        /* --- CURRENT TRIP CARD --- */
+        .current-order-card {
+            background: linear-gradient(135deg, #fff 0%, var(--gray-50) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* --- FILTERS --- */
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        select {
+            border: none;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--primary);
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* --- TABLE --- */
+        .table-card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        th {
+            background: var(--gray-50);
+            padding: 1rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 800;
+        }
+        td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #fff9fa; }
+
+        /* --- BADGES & BUTTONS --- */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .status-waiting { background: #fef3c7; color: #92400e; }
+        .status-shipping { background: #d1fae5; color: #065f46; }
+
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.6rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-action:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3); }
+        
+        .btn-secondary {
+            background: var(--white);
+            color: var(--dark);
+            border: 1px solid var(--gray-200);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .earnings { font-weight: 800; color: var(--success); font-size: 1rem; }
+
+        /* --- EMPTY STATE --- */
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: var(--gray-600);
+        }
+
+        @media (max-width: 1100px) {
+            .sidebar { width: 80px; padding: 1rem; }
+            .sidebar span, .brand span { display: none; }
+            main { margin-left: 80px; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand"><i class="fa-solid fa-truck-fast" style="color: var(--primary)"></i> <span>FleetDriver</span></div>
+        <ul class="nav-links">
+            <li><a href="/home/driver"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a></li>
+            <li><a href="/driver/orders" class="active"><i class="fa-solid fa-box"></i> <span>Available Orders</span></a></li>
+            <li><a href="/driver/history"><i class="fa-solid fa-clock-rotate-left"></i> <span>My History</span></a></li>
+            <li><a href="/driver/wallet"><i class="fa-solid fa-wallet"></i> <span>Earnings</span></a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <section class="current-trip">
+            <header>
+                <h1>Active Trip</h1>
+            </header>
+            
+            <% if (!pending || pending.length === 0) { %>
+                <div class="table-card empty-state">
+                    <i class="fa-solid fa- route fa-3x" style="color: var(--gray-200); margin-bottom: 1rem;"></i>
+                    <h2>No current trips found. Accept an order below to get started.</h2>
+                </div>
+            <% } else { %>
+                <div class="table-card current-order-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Pickup From</th>
+                                <th>Delivery To</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="status-badge status-shipping">In Progress</span></td>
+                                <td><i class="fa-solid fa-shop"></i> <%= pending[0].store_geolocation %></td>
+                                <td><i class="fa-solid fa-location-dot"></i> <%= pending[0].user_geolocation %></td>
+                                <td>
+                                    <a href="/order/for/driver/<%= pending[0].order_id %>" class="btn-action">
+                                        Complete Trip
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </section>
+
+        <section class="available-orders">
+            <header>
+                <h1>Available Orders</h1>
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-filter"></i> Filter:</label>
+                    <select name="filter" onchange="location = this.value;">
+                        <option value="?sort=recent">Recent First</option>
+                        <option value="?sort=earnings">Highest Earnings</option>
+                        <option value="?sort=distance">Nearest Distance</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="table-card">
+                <% if(orders && orders.length > 0){ %>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Status</th>
+                                <th>Earnings</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(function(order){ %>
+                                <tr>
+                                    <td><strong>#<%= order.id %></strong></td>
+                                    <td><%= order.fullname %></td>
+                                    <td>
+                                        <div style="font-size: 0.8rem; color: var(--gray-600)">
+                                            <div><i class="fa-solid fa-circle" style="font-size: 8px; color: var(--primary)"></i> <%= order.storename %></div>
+                                            <div style="margin-top: 4px;"><i class="fa-solid fa-location-dot"></i> <%= order.delivery_geolocation %></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <% if(order.delivery_status === 'WAITING_FOR_DRIVER'){ %>
+                                            <span class="status-badge status-waiting">Waiting</span>
+                                        <% } else { %>
+                                            <span class="status-badge status-shipping">Order Taken</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="earnings">R<%= (order.delievery_fee * 0.75).toFixed(2) %></td>
+                                    <td>
+                                        <button class="btn-action" id="<%= order.id %>">Accept</button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open fa-3x" style="color: var(--gray-200); margin-bottom: 1rem;"></i>
+                        <p>No orders available at the moment.</p>
+                        <button class="btn-secondary" onclick="window.location.reload()">
+                            <i class="fa-solid fa-rotate"></i> Refresh List
+                        </button>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+     
+        let socket=io();
+        socket.on("ORDER ACCEPTED",()=>{
+            window.location.reload();
+        })
+        socket.on("Data Base Updated",data=>{
+            if(data.status=="ACCEPTED"){
+                alert("New order alert")
+                window.location.reload();
+            }
+        })
+        let userCoords = null; 
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    },
+                    (error) => { console.error("Error getting location:", error.message); }
+                );
+            }
+        };
+        getLocation();
+
+        document.querySelectorAll(".btn-action[id]").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const orderId = btn.getAttribute("id");
+                if (!userCoords) {
+                    alert("Still getting your location. Please ensure GPS is on.");
+                    return;
+                }
+                try {
+                    const response = await fetch("/accept/order", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ orderId: orderId, location: userCoords })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = "/order/for/driver/" + orderId;
+                    } else {
+                        alert("Failed to accept order: " + (data.message || "Unknown error"));
+                    }
+                } catch (error) {
+                    alert("An error occurred. Please check your connection.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

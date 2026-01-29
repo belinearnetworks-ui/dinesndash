@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Cancelled | DinesNDash</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* --- CSS VARIABLES (Same as Order Page) --- */
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --primary-light: #fff1f2;
+        --dark: #111827;
+        --gray: #6b7280;
+        --light-gray: #f3f4f6;
+        --white: #ffffff;
+        --border: #e5e7eb;
+        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --radius: 1rem;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        background: var(--light-gray);
+        color: var(--dark);
+        overflow-x: hidden;
+      }
+
+      /* --- LAYOUT --- */
+      .app-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* --- SIDEBAR --- */
+      .sidebar {
+        width: 260px;
+        background: var(--white);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        height: 100vh;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        color: var(--dark);
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        color: var(--gray);
+        border-radius: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+
+      .user-profile {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--dark);
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      .avatar img { width: 100%; height: 100%; object-fit: cover;}
+
+      /* --- MAIN CONTENT CENTERED --- */
+      .main-content {
+        flex: 1;
+        margin-left: 260px;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      /* --- CANCEL CARD --- */
+      .cancel-card {
+        background: var(--white);
+        width: 100%;
+        max-width: 550px;
+        border-radius: var(--radius);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        text-align: center;
+        animation: slideUp 0.4s ease-out;
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: #fee2e2;
+        color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem auto;
+        font-size: 2.5rem;
+      }
+
+      .cancel-card h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+      }
+
+      .cancel-card p {
+        color: var(--gray);
+        margin-bottom: 2rem;
+        line-height: 1.5;
+      }
+
+      /* --- FEEDBACK SECTION --- */
+      .feedback-box {
+        text-align: left;
+        background: var(--light-gray);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .feedback-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .chip {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border);
+        background: var(--white);
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        color: var(--gray);
+      }
+
+      .chip:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      /* Hidden radio input logic */
+      .chip-input { display: none; }
+      .chip-input:checked + .chip {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .feedback-text {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        resize: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
+
+      .feedback-text:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+      }
+
+      /* --- BUTTONS --- */
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.2s;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: var(--dark);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--gray);
+        border: 1px solid transparent;
+      }
+      .btn-secondary:hover {
+        color: var(--dark);
+        background: var(--light-gray);
+      }
+
+      /* --- RESPONSIVE --- */
+      @media (max-width: 768px) {
+        .sidebar { display: none; }
+        .main-content { margin-left: 0; padding: 1rem; }
+        .cancel-card { padding: 1.5rem; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      
+      <aside class="sidebar">
+        <div class="logo">
+          <i class="fas fa-utensils" style="color: var(--primary)"></i>
+          <span>Dines<span style="color: var(--primary)">N</span>Dash</span>
+        </div>
+        <nav>
+            <a href="/dashboard" class="nav-item">
+              <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="/orders" class="nav-item">
+              <i class="fas fa-clock"></i> Orders
+            </a>
+            <a href="/wallet" class="nav-item active">
+              <i class="fas fa-wallet"></i> Wallet
+            </a>
+          </nav>
+          
+          <div class="user-profile">
+            <div class="avatar">
+               </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.9rem">
+                John Doe
+              </div>
+            </div>
+          </div>
+      </aside>
+
+      <main class="main-content">
+        
+        <div class="cancel-card">
+          <div class="icon-circle">
+            <i class="fas fa-times"></i>
+          </div>
+
+          <h1>Payment Cancelled</h1>
+          <p>
+            You have not been charged. The transaction was cancelled before we could process your order.
+          </p>
+
+          <form action="/submit-feedback" method="POST">
+              <div class="feedback-box">
+                <label class="feedback-label">Help us improve. What happened?</label>
+                
+                <div class="chips-container">
+                    <label>
+                        <input type="radio" name="reason" value="changed_mind" class="chip-input">
+                        <span class="chip">Changed my mind</span>
+                    </label>
+                    
+                    <label>
+                        <input type="radio" name="reason" value="technical" class="chip-input">
+                        <span class="chip">Technical issue</span>
+                    </label>
+                    
+                    <label>
+                        <input type="radio" name="reason" value="payment_method" class="chip-input">
+                        <span class="chip">Payment method failed</span>
+                    </label>
+                    
+                    <label>
+                        <input type="radio" name="reason" value="forgot_item" class="chip-input">
+                        <span class="chip">Forgot an item</span>
+                    </label>
+                </div>
+
+                <textarea 
+                    name="details" 
+                    class="feedback-text" 
+                    rows="2" 
+                    placeholder="Any other details? (Optional)"
+                ></textarea>
+                <input type="submit" value="Submit Feedback" class="btn btn-secondary" style="margin-top: 1rem; width: auto;">
+              </div>
+
+              <div class="actions">
+                <button type="button" onclick="window.location.href='/checkout'" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Retry Transaction
+                </button>
+                
+                <button type="button" onclick="window.location.href='/dashboard'" class="btn btn-secondary">
+                    Return to Dashboard
+                </button>
+              </div>
+          </form>
+
+        </div>
+
+      </main>
+    </div>
+  </body>
+</html>

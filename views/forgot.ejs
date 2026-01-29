@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+        :root {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --dark: #0f172a;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --white: #ffffff;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background-color: var(--gray-50);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 1.5rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0 0 0.5rem 0;
+            text-align: center;
+        }
+
+        p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--gray-600);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: var(--gray-200);
+            cursor: not-allowed;
+            color: var(--gray-600);
+        }
+
+        #error {
+            background-color: #fff1f2;
+            color: #e11d48;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .back-to-login a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="brand-logo">
+            <i class="fa-solid fa-store" style="color: var(--primary)"></i>
+        </div>
+
+        <div class="card">
+            <h2>Forgot Password?</h2>
+            <p>No worries! Enter your email address and we'll send you a link to reset your password.</p>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@company.com" required>
+            </div>
+
+            <button id="submit">
+                <span>Request Email Link</span>
+            </button>
+
+            <div id="error"></div>
+        </div>
+
+        <div class="back-to-login">
+            <a href="/signup"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById("submit");
+        const emailInput = document.getElementById("email");
+        const errorDiv = document.getElementById("error");
+
+        submitBtn.addEventListener("click", () => {
+            let email = emailInput.value;
+            
+            if (email !== "") {
+                // UI Feedback: Loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+                errorDiv.style.display = "none";
+
+                fetch("/forgot-password/" + email, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.Status) {
+                        alert("Password reset link sent to your email.");
+                        // Standard practice is usually redirecting to login, 
+                        // but keeping your logic to redirect to signup
+                        window.location.href = "/signup"; 
+                    } else {
+                        errorDiv.innerHTML = data.reason || "Something went wrong.";
+                        errorDiv.style.display = "block";
+                        resetButton();
+                    }
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    errorDiv.innerHTML = "Server error. Please try again later.";
+                    errorDiv.style.display = "block";
+                    resetButton();
+                });
+            } else {
+                errorDiv.innerHTML = "Please enter your email address.";
+                errorDiv.style.display = "block";
+            }
+        });
+
+        function resetButton() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "Request Email Link";
+        }
+    </script>
+</body>
+</html>

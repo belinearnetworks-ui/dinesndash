@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search | DinesNDash</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #c41840;
+        --dark: #0f172a;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-600: #475569;
+        --white: #ffffff;
+        --border: #e5e7eb;
+        --light-gray: #f3f4f6;
+        --gray: #6b7280;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #fff;
+        color: var(--dark);
+        margin: 0;
+        padding-bottom: 50px;
+      }
+
+      /* --- SEARCH HEADER --- */
+      .search-container {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 1rem;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .search-bar-wrapper {
+        flex: 1;
+        position: relative;
+        max-width: 600px;
+      }
+
+      .search-bar-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-600);
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border-radius: 2rem;
+        border: 2px solid var(--gray-100);
+        background: var(--gray-100);
+        font-size: 1rem;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+      }
+
+      input[type="text"]:focus {
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+      }
+
+      /* Cart button */
+      .cart-icon-wrapper {
+        position: relative;
+      }
+
+      #cart-button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        transition: 0.2s;
+      }
+
+      #cart-button:hover {
+        background: var(--primary-hover);
+      }
+
+      .cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--dark);
+        color: white;
+        font-size: 0.7rem;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        padding: 2px;
+      }
+
+      /* --- SECTIONS --- */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin: 2rem 0 1rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* --- HORIZONTAL SCROLLING ROWS --- */
+      .meal-row {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scrollbar-width: none;
+      }
+      .meal-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .meal-card {
+        min-width: 200px;
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-100);
+        transition: transform 0.2s;
+      }
+
+      .meal-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .meal-img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+      }
+
+      .meal-info {
+        padding: 1rem;
+      }
+      .meal-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+      }
+      .meal-price {
+        color: var(--primary);
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+      }
+
+      .add-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        width: 100%;
+      }
+
+      .add-btn:hover {
+        background: var(--primary-hover);
+      }
+
+      .in-cart-btn {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      /* --- STORES GRID --- */
+      .store-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+
+      .store-card {
+        background: var(--gray-50);
+        padding: 1.5rem 1rem;
+        text-align: center;
+        border-radius: 1rem;
+        text-decoration: none;
+        color: var(--dark);
+        border: 1px solid var(--gray-100);
+        transition: 0.2s;
+      }
+
+      .store-card:hover {
+        border-color: var(--primary);
+        background: white;
+      }
+      .store-card i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .store-card span {
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+
+      /* --- CART DRAWER --- */
+      .cart-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 90;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+      }
+      .cart-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .cart-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 400px;
+        max-width: 90vw;
+        background: var(--white);
+        z-index: 100;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+      }
+      .cart-drawer.open {
+        transform: translateX(0);
+      }
+      .cart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .cart-items {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding-right: 0.5rem;
+      }
+
+      /* Scrollbar styling for cart */
+      .cart-items::-webkit-scrollbar {
+        width: 6px;
+      }
+      .cart-items::-webkit-scrollbar-thumb {
+        background-color: #e5e7eb;
+        border-radius: 10px;
+      }
+      .cart-item {
+        display: flex;
+        gap: 1rem;
+      }
+      .cart-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 0.75rem;
+        object-fit: cover;
+      }
+      .cart-item-details {
+        flex: 1;
+      }
+      .cart-item-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+      }
+      .cart-item-price {
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+      .qty-btn {
+        background: var(--light-gray);
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        line-height: 0;
+        transition: 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .qty-btn:hover {
+        background: #e5e7eb;
+      }
+      .cart-footer {
+        margin-top: 2rem;
+        border-top: 1px solid var(--border);
+        padding-top: 1.5rem;
+      }
+      .cart-total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+      .cart-total-row.final {
+        color: var(--dark);
+        font-weight: 800;
+        font-size: 1.25rem;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .checkout-btn {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+      .checkout-btn:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+      }
+      .empty-cart-msg {
+        text-align: center;
+        color: var(--gray);
+        margin-top: 4rem;
+        font-style: italic;
+      }
+      /* Add this to your CSS */
+      #search-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+      }
+
+      #search-btn:hover {
+        background: var(--primary-hover);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="search-container" style="text-align: center">
+      <div class="search-bar-wrapper">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+          type="text"
+          id="search-input"
+          value="<%= first_value %>"
+          placeholder="What are you cravin'?"
+        />
+        <button id="search-btn">Search</button>
+      </div>
+      <div class="cart-icon-wrapper">
+        <button onclick="toggleCart(true)" id="cart-button">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="cart-badge" id="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+    <div class="cart-drawer" id="cartDrawer">
+      <div class="cart-header">
+        <h2 style="font-size: 1.5rem">Your Cart</h2>
+        <button
+          onclick="toggleCart()"
+          style="background: none; border: none; cursor: pointer"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path d="M18 6L6 18" />
+            <path d="M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <div class="empty-cart-msg">
+          Your cart is empty. <br />Start adding some yummy food!
+        </div>
+      </div>
+
+      <div class="cart-footer" id="cart-footer" style="display: none">
+        <div class="cart-total-row">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">R0.00</span>
+        </div>
+        <div class="cart-total-row final">
+          <span>Total</span>
+          <span id="cartTotal">R0.00</span>
+        </div>
+        <button class="checkout-btn" id="checkout-btn">Checkout</button>
+      </div>
+    </div>
+
+    <main>
+      <div id="results" style="text-align: center"></div>
+      <section>
+        <h2>
+          Hot Meals Now <i class="fa-solid fa-fire" style="color: #f97316"></i>
+        </h2>
+        <div class="meal-row" id="hot_meals_list"></div>
+      </section>
+
+      <section>
+        <h2>
+          Affordable Meals
+          <i class="fa-solid fa-tag" style="color: #10b981"></i>
+        </h2>
+        <div class="meal-row" id="affordable_list"></div>
+      </section>
+
+      <section>
+        <h2>All Partners/Stores</h2>
+        <div class="store-grid" id="all_stores_list"></div>
+      </section>
+    </main>
+
+    <script>
+
+            let cart = JSON.parse(localStorage.getItem("Cart")) || [];
+            let SearchHistory=JSON.parse(localStorage.getItem("History"))||[]
+            let Results=document.getElementById("results");
+            let Value=document.getElementById("search-input")
+            console.log(SearchHistory)
+
+
+          function displaySearchHistory() {
+            let Results = document.getElementById("results");
+            Results.innerHTML = ""; // Clear previous content
+
+            if (SearchHistory.length === 0) {
+              let p = document.createElement("p");
+              p.textContent = "No search history";
+              Results.appendChild(p);
+            } else {
+              let h3 = document.createElement("h3");
+              h3.textContent = "Recent Searches:";
+              h3.style.marginBottom = "1rem";
+              Results.appendChild(h3);
+
+              let historyContainer = document.createElement("div");
+              historyContainer.style.display = "flex";
+              historyContainer.style.flexWrap = "wrap";
+              historyContainer.style.gap = "0.5rem";
+
+              // Display most recent first (reverse the array)
+              SearchHistory.reverse().forEach(item => {
+                let badge = document.createElement("span");
+                badge.textContent = item;
+                badge.style.padding = "0.5rem 1rem";
+                badge.style.background = "var(--gray-100)";
+                badge.style.borderRadius = "2rem";
+                badge.style.cursor = "pointer";
+                badge.style.fontSize = "0.9rem";
+                badge.style.transition = "all 0.2s";
+
+                badge.addEventListener("click", function() {
+                  document.getElementById("search-input").value = item;
+                  // Trigger search when clicking on history item
+                  document.getElementById("search-btn").click();
+                });
+
+                badge.addEventListener("mouseenter", function() {
+                  this.style.background = "var(--primary)";
+                  this.style.color = "white";
+                });
+
+                badge.addEventListener("mouseleave", function() {
+                  this.style.background = "var(--gray-100)";
+                  this.style.color = "var(--dark)";
+                });
+
+                historyContainer.appendChild(badge);
+              });
+
+              Results.appendChild(historyContainer);
+            }
+          }
+
+            // Data injected from backend
+            let Trending = <%- JSON.stringify(hot) %>;
+            let Cheap = <%- JSON.stringify(cheap) %>;
+            let Stores = <%- JSON.stringify(stores) %>;
+
+            // Helper function to get image from Images field
+            function getImageUrl(imagesString) {
+              try {
+                const images = JSON.parse(imagesString);
+                if (images && images.length > 0) {
+                  return "/" + images[0];
+                }
+              } catch (e) {
+                console.error("Error parsing images:", e);
+              }
+              return 'https://placehold.co/200x120?text=Food';
+            }
+
+            function renderMeals(data, containerId) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = data.map(meal => {
+                  const inCart = cart.find(c => String(c.meal_id) === String(meal.meal_id));
+                  const cartButtonText = inCart ? `In Cart (${inCart.qty})` : 'Add to Cart';
+                  const cartButtonClass = inCart ? 'in-cart-btn' : 'add-btn';
+
+                  return `
+                      <div class="meal-card">
+                          <img src="${getImageUrl(meal.Images)}" class="meal-img" onerror="this.src='https://placehold.co/200x120?text=Food'">
+                          <div class="meal-info">
+                              <div class="meal-name">${meal.meal_name || 'Meal'}</div>
+                              <div class="meal-price">R ${meal.SellingPrice || '0.00'}</div>
+                              <button class="${cartButtonClass}" onclick='addToCart(${JSON.stringify(meal.meal_id)})'>
+                                ${cartButtonText}
+                              </button>
+                          </div>
+                      </div>
+                    `;
+                }).join('');
+            }
+
+            function renderStores(data) {
+                const container = document.getElementById('all_stores_list');
+                container.innerHTML = data.map(store => `
+                    <a href="/store/${store.id}" class="store-card">
+                        <i class="fa-solid fa-store"></i>
+                        <span>${store.storename}</span>
+                    </a>
+                `).join('');
+            }
+
+            // Cart functions
+            function saveCartToLocalStorage() {
+                localStorage.setItem("Cart", JSON.stringify(cart));
+            }
+
+            function addToCart(meal_id) {
+                console.log("Adding to cart:", meal_id);
+
+                // Combine both data sources to search for the item
+                const allMeals = [...Trending, ...Cheap];
+                const item = allMeals.find(f => String(f.meal_id) === String(meal_id));
+
+                if (!item) {
+                    console.error("Item not found:", meal_id);
+                    return;
+                }
+
+                // Check if already in cart
+                const existing = cart.find(c => String(c.meal_id) === String(meal_id));
+
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    cart.push({
+                        meal_id: item.meal_id,
+                        meal_name: item.meal_name,
+                        SellingPrice: item.SellingPrice,
+                        Images: item.Images,
+                        storename: item.storename,
+                        id: item.store_id,
+                        qty: 1
+                    });
+                }
+
+                saveCartToLocalStorage();
+                updateCartUI();
+
+                // Re-render both sections to update button states
+                renderMeals(Trending, 'hot_meals_list');
+                renderMeals(Cheap, 'affordable_list');
+            }
+
+            function updateCartQty(meal_id, change) {
+                const val = parseInt(change);
+                const index = cart.findIndex(c => String(c.meal_id) === String(meal_id));
+
+                if (index === -1) return;
+
+                cart[index].qty += val;
+
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+
+                saveCartToLocalStorage();
+                updateCartUI();
+
+                // Re-render both sections to update button states
+                renderMeals(Trending, 'hot_meals_list');
+                renderMeals(Cheap, 'affordable_list');
+            }
+
+            function updateCartUI() {
+                const cartList = document.getElementById('cartItems');
+                const badge = document.getElementById('cart-badge');
+                const subtotalEl = document.getElementById('cartSubtotal');
+                const totalEl = document.getElementById('cartTotal');
+                const cartFooter = document.getElementById('cart-footer');
+                const emptyMsg = cartList.querySelector('.empty-cart-msg');
+
+                // Update Badge
+                const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
+                badge.innerText = totalCount;
+
+                if (cart.length === 0) {
+                    cartList.innerHTML = '<div class="empty-cart-msg">Your cart is empty. <br>Start adding some yummy food!</div>';
+                    subtotalEl.innerText = 'R0.00';
+                    totalEl.innerText = 'R0.00';
+                    cartFooter.style.display = 'none';
+                    return;
+                }
+
+                cartFooter.style.display = 'block';
+                cartList.innerHTML = '';
+                let subtotal = 0;
+
+                cart.forEach(item => {
+                    subtotal += parseFloat(item.SellingPrice) * item.qty;
+
+                    const el = document.createElement('div');
+                    el.className = 'cart-item';
+                    el.innerHTML = `
+                        <img src="${getImageUrl(item.Images)}" alt="Food" onerror="this.src='https://placehold.co/100x100?text=Food'">
+                        <div class="cart-item-details">
+                            <div class="cart-item-title">${item.meal_name}</div>
+                            <div class="cart-item-price">R${item.SellingPrice}</div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateCartQty('${item.meal_id}', -1)">-</button>
+                                <span>${item.qty}</span>
+                                <button class="qty-btn" onclick="updateCartQty('${item.meal_id}', 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                    cartList.appendChild(el);
+                });
+
+                const total = subtotal;
+                subtotalEl.innerText = 'R' + subtotal.toFixed(2);
+                totalEl.innerText = 'R' + total.toFixed(2);
+            }
+
+            // --- CART DRAWER ---
+            function toggleCart(forceOpen = false) {
+                const drawer = document.getElementById('cartDrawer');
+                const overlay = document.getElementById('cartOverlay');
+
+                if (forceOpen) {
+                    drawer.classList.add('open');
+                    overlay.classList.add('open');
+                } else {
+                    drawer.classList.toggle('open');
+                    overlay.classList.toggle('open');
+                }
+            }
+
+      // Move the search button event listener inside DOMContentLoaded
+      document.addEventListener('DOMContentLoaded', () => {
+        // ... existing code ...
+
+        // Search button functionality
+        document.getElementById("search-btn").addEventListener("click", function() {
+          let searchTerm = document.getElementById("search-input").value.trim();
+
+          if (searchTerm !== "") {
+            // Add to search history if not already present
+            if (!SearchHistory.includes(searchTerm)) {
+              SearchHistory.push(searchTerm);
+              // Keep only last 10 searches
+              if (SearchHistory.length > 10) {
+                SearchHistory.shift();
+              }
+              localStorage.setItem("History", JSON.stringify(SearchHistory));
+            }
+
+            // Clear previous results
+            document.getElementById("results").innerHTML = "";
+
+            // Show loading indicator
+            let loading = document.createElement("div");
+            loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            loading.style.textAlign = "center";
+            loading.style.padding = "2rem";
+            document.getElementById("results").appendChild(loading);
+
+            // Perform search
+            fetch("/search/" + encodeURIComponent(searchTerm), {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              }
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.Status) {
+                // Update global data variables with search results
+                Trending = data.meals.sort((a,b) => b.sales - a.sales);
+                Cheap = data.meals.sort((a,b) => a.SellingPrice - b.SellingPrice);
+                Stores = data.stores;
+
+                // Update UI
+                renderMeals(Trending, 'hot_meals_list');
+                renderMeals(Cheap, 'affordable_list');
+                renderStores(Stores);
+
+                // Show search results count
+                let resultsInfo = document.createElement("p");
+                resultsInfo.textContent = `Found ${data.meals.length} meals and ${data.stores.length} stores for "${searchTerm}"`;
+                resultsInfo.style.textAlign = "center";
+                resultsInfo.style.marginTop = "2rem";
+                resultsInfo.style.fontWeight = "600";
+                document.getElementById("results").innerHTML = "";
+                document.getElementById("results").appendChild(resultsInfo);
+              } else {
+                document.getElementById("results").innerHTML =
+                  `<p style="text-align:center; color:var(--gray-600);">No results found for "${searchTerm}"</p>`;
+              }
+            })
+            .catch(error => {
+              console.error("Search error:", error);
+              document.getElementById("results").innerHTML =
+                `<p style="text-align:center; color:var(--primary);">Error performing search. Please try again.</p>`;
+            });
+          }
+        });
+      });
+
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+
+                if (term === '') {
+                    renderStores(Stores);
+                    renderMeals(Trending, 'hot_meals_list');
+                    renderMeals(Cheap, 'affordable_list');
+                    return;
+                }
+
+                // Filter stores
+                const filteredStores = Stores.filter(s =>
+                    s.storename.toLowerCase().includes(term)
+                );
+                renderStores(filteredStores);
+
+                // Filter meals
+                const filteredHot = Trending.filter(m =>
+                    m.meal_name.toLowerCase().includes(term)
+                );
+                const filteredCheap = Cheap.filter(m =>
+                    m.meal_name.toLowerCase().includes(term)
+                );
+
+                renderMeals(filteredHot, 'hot_meals_list');
+                renderMeals(filteredCheap, 'affordable_list');
+            });
+
+            // Initialize view
+            document.addEventListener('DOMContentLoaded', () => {
+              displaySearchHistory()
+              renderMeals(Trending, 'hot_meals_list');
+              renderMeals(Cheap, 'affordable_list');
+              renderStores(Stores);
+              updateCartUI();
+            });
+    </script>
+  </body>
+</html>

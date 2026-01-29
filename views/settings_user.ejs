@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Settings | DinesNDash</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --dark: #0f172a;
+        --gray-50: #f8fafc;
+        --gray-200: #e2e8f0;
+        --gray-600: #475569;
+        --white: #ffffff;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--gray-50);
+        color: var(--dark);
+        margin: 0;
+        padding: 0;
+        /* padding: 2rem; */
+        display: flex;
+        justify-content: flex-start;
+      }
+      /* --- SIDEBAR --- */
+      .sidebar {
+        width: 260px;
+        background: var(--white);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        height: 100vh;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+        transition: transform 0.3s ease;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        color: var(--gray);
+        border-radius: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+      .nav-item:hover,
+      .nav-item.active {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+      .user-profile {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--dark);
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .settings-container {
+        max-width: 700px;
+        width: 100%;
+      }
+
+      .card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 1.25rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      h2,
+      h3,
+      h4 {
+        margin-top: 0;
+        font-weight: 800;
+      }
+      h2 {
+        font-size: 1.75rem;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+      }
+      h3 {
+        font-size: 1.1rem;
+        color: var(--gray-600);
+        border-bottom: 1px solid var(--gray-200);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--gray-600);
+      }
+
+      .input-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.75rem;
+        font-family: inherit;
+        outline: none;
+        transition: 0.2s;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+        ring: 2px solid #ffe4e6;
+      }
+      input[readonly] {
+        background-color: var(--gray-50);
+        cursor: not-allowed;
+      }
+
+      /* Verification Badges */
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .badge-verified {
+        background: #d1fae5;
+        color: var(--success);
+      }
+      .badge-unverified {
+        background: #ffedd5;
+        color: var(--warning);
+        cursor: pointer;
+      }
+
+      /* Allergy Tags */
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .tag {
+        background: var(--dark);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Buttons */
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.85rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .link-item {
+        display: block;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        transition: 0.2s;
+        border: 1px solid transparent;
+      }
+      .link-item:hover {
+        border-color: var(--primary);
+        background: #fff9fa;
+      }
+      .settings-container {
+        margin-left: 280px; /* Sidebar width + 20px gap */
+        padding: 2rem;
+        max-width: 800px;
+        width: calc(100% - 300px);
+      }
+
+      /* Styled Table for Meals */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        border-radius: 0.75rem;
+        overflow: hidden;
+      }
+
+      th {
+        text-align: left;
+        background: var(--gray-50);
+        padding: 1rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--gray-600);
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        font-size: 0.9rem;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Activity Log Styling */
+      .activity-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+      }
+
+      .activity-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: var(--gray-50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+      }
+
+      .activity-info p {
+        margin: 0;
+        font-size: 0.85rem;
+      }
+      .activity-info b {
+        color: var(--gray-600);
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .settings-container {
+          margin-left: 0;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          style="color: var(--primary)"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path d="M7 2v7" stroke-width="1.6" />
+          <path
+            d="M7 9c0 1.657-2 3-2 5s1 6 5 6 5-4 5-6-2-3-2-5"
+            stroke-width="1.6"
+          />
+        </svg>
+        <span>Dines<span style="color: var(--primary)">N</span>Dash</span>
+      </div>
+
+      <nav>
+        <a href="#" class="nav-item active">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <rect x="3" y="3" width="8" height="8" rx="1" />
+            <rect x="13" y="3" width="8" height="8" rx="1" />
+            <rect x="3" y="13" width="8" height="8" rx="1" />
+            <rect x="13" y="13" width="8" height="8" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/fav/meals" class="nav-item">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M12 21s-7-4.5-9-8a5 5 0 0 1 8-6l1 1 1-1a5 5 0 0 1 8 6c-2 3.5-9 8-9 8z"
+            />
+          </svg>
+          Favorites
+        </a>
+        <a href="/all/orders/users" class="nav-item">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v6l4 2" />
+          </svg>
+          Orders
+        </a>
+        <a href="#" class="nav-item">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="M2 10h20" />
+          </svg>
+          Wallet
+        </a>
+        <a href="/settings" class="nav-item">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+            <path
+              d="M19.4 15a1.8 1.8 0 0 0 .1 1.4l.5.7a1 1 0 0 1-.2 1.2l-1.2 1.2a1 1 0 0 1-1.2.2l-.7-.4a1.8 1.8 0 0 0-1.4.1l-1.1.6a1 1 0 0 1-1 0l-1.1-.6a1.8 1.8 0 0 0-1.4-.1l-.7.4a1 1 0 0 1-1.2-.2L4.3 18a1 1 0 0 1-.2-1.2l.5-.7a1.8 1.8 0 0 0 .1-1.4l-.6-1.1a1 1 0 0 1 0-1l.6-1.1a1.8 1.8 0 0 0-.1-1.4l-.5-.7A1 1 0 0 1 4.3 6L5.5 4.8A1 1 0 0 1 6.7 4.6l.7.4a1.8 1.8 0 0 0 1.4-.1l1.1-.6a1 1 0 0 1 1 0l1.1.6a1.8 1.8 0 0 0 1.4.1l.7-.4a1 1 0 0 1 1.2.2L19.7 6a1 1 0 0 1 .2 1.2l-.5.7c.2.5.2 1 .1 1.4l.6 1.1a1 1 0 0 1 0 1l-.6 1.1z"
+            />
+          </svg>
+          Settings
+        </a>
+      </nav>
+
+      <div class="user-profile">
+        <div class="avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=<%= user.fullname %>&background=random"
+            alt="User"
+          />
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.9rem">
+            <%= user.fullname %>
+          </div>
+        </div>
+        <button style="margin-left: auto; color: var(--gray)" id="logout">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
+            <path d="M12 19H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <div class="settings-container">
+      <h2>User Settings</h2>
+
+      <section class="card">
+        <h3><i class="fa-solid fa-user-gear"></i> Personal Info</h3>
+        <form id="profileForm" action="/update-profile" method="POST">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              id="fullname"
+              name="fullname"
+              value="<%= user.fullname %>"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-row">
+              <input type="email" value="<%= user.email %>" readonly />
+              <% if(user.verified) { %>
+              <span class="badge badge-verified"
+                ><i class="fa-solid fa-circle-check"></i> Verified</span
+              >
+              <% } else { %>
+              <span class="badge badge-unverified">Verify Email</span>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number</label>
+            <div class="input-row">
+              <input type="text" value="<%= user.numbers %>" readonly />
+              <% if(user.number_verified) { %>
+              <span class="badge badge-verified"
+                ><i class="fa-solid fa-circle-check"></i> Verified</span
+              >
+              <% } else { %>
+              <span class="badge badge-unverified">Verify Phone</span>
+              <% } %>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem">
+            <button type="submit" id="updateBtn" class="btn-primary" disabled>
+              Update Info
+            </button>
+            <button
+              type="reset"
+              class="btn-secondary"
+              style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--gray-600);
+                font-weight: 600;
+              "
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h3><i class="fa-solid fa-shield-heart"></i> Personal Safety</h3>
+        <p
+          style="
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+          "
+        >
+          Please Note: Your safety matters to us! 😊
+        </p>
+
+        <label>Allergies</label>
+        <div class="input-row" style="margin-top: 0.5rem">
+          <input type="text" id="allergyInput" placeholder="e.g. Peanuts" />
+          <button type="button" class="btn-primary" onclick="addAllergy()">
+            Add
+          </button>
+        </div>
+
+        <div class="tags-container" id="allergyList">
+          <% if(user.allergies && user.allergies.length > 0) { %> <%
+          user.allergies.split(',').forEach(allergy => { %>
+          <span class="tag"
+            ><%= allergy.trim() %>
+            <i class="fa-solid fa-xmark" style="cursor: pointer"></i
+          ></span>
+          <% }) %> <% } %>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3><i class="fa-solid fa-utensils"></i> Most Ordered Meals</h3>
+        <% if(meals.length == 0) { %>
+        <div style="text-align: center; padding: 2rem">
+          <h4>No meals ordered yet</h4>
+          <a
+            href="/home"
+            class="btn-primary"
+            style="
+              text-decoration: none;
+              display: inline-block;
+              margin-top: 10px;
+            "
+            >Get Started!</a
+          >
+        </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Meal Name</th>
+              <th>Orders</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% meals.forEach(meal => { %>
+            <tr>
+              <td><strong><%= meal.meal_name %></strong></td>
+              <td>
+                <span class="badge badge-verified"
+                  ><%= meal.total_orders %> times</span
+                >
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </section>
+
+      <section class="card">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h3>
+
+        <div class="activity-item">
+          <div class="activity-icon">
+            <i class="fa-solid fa-right-to-bracket"></i>
+          </div>
+          <div class="activity-info">
+            <p><b>Last Login:</b> <%= user.logindate %></p>
+            <p><small>via <%= user.loginos %></small></p>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </div>
+          <div class="activity-info">
+            <p><b>Last Logout:</b> <%= user.logoutdate %></p>
+            <p><small>via <%= user.logoutos %></small></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3><i class="fa-solid fa-lock"></i> Security & Privacy</h3>
+        <a href="/reset-password" class="link-item">
+          <i
+            class="fa-solid fa-key"
+            style="margin-right: 10px; color: var(--primary)"
+          ></i>
+          Reset Password
+        </a>
+        <a href="/privacy-policy" class="link-item">
+          <i
+            class="fa-solid fa-file-shield"
+            style="margin-right: 10px; color: var(--primary)"
+          ></i>
+          Privacy Policy
+        </a>
+        <a href="/terms" class="link-item">
+          <i
+            class="fa-solid fa-file-contract"
+            style="margin-right: 10px; color: var(--primary)"
+          ></i>
+          Terms & Conditions
+        </a>
+      </section>
+    </div>
+
+    <script>
+      const nameInput = document.getElementById("fullname");
+      const updateBtn = document.getElementById("updateBtn");
+      const originalName = nameInput.value;
+
+      // Only enable update button if data changed
+      nameInput.addEventListener("input", () => {
+        updateBtn.disabled = nameInput.value.trim() === originalName;
+      });
+
+      function addAllergy() {
+        const input = document.getElementById("allergyInput");
+        const container = document.getElementById("allergyList");
+        if (input.value.trim() !== "") {
+          const span = document.createElement("span");
+          span.className = "tag";
+          span.innerHTML = `${input.value} <i class="fa-solid fa-xmark" style="cursor:pointer" onclick="this.parentElement.remove()"></i>`;
+          container.appendChild(span);
+          input.value = "";
+        }
+      }
+    </script>
+  </body>
+</html>

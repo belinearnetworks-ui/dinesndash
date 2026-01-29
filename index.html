@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3 Location Route Map</title>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCK9jGKwn8urrjmdR7Bx9ivKGurZL0NzY8"></script>
+
+<script>
+  // CHANGE THESE COORDINATES
+  const HOME = { lat: -26.1900, lng: 28.0500 };    // First stop
+  const SCHOOL = { lat: -26.1700, lng: 28.0300 };  // Destination
+
+  function initMap(currentLocation) {
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 0.3,
+      center: currentLocation
+    });
+
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: true // We'll add custom markers
+    });
+
+    // Markers
+    new google.maps.Marker({
+      position: currentLocation,
+      map,
+      label: "You"
+    });
+
+    new google.maps.Marker({
+      position: HOME,
+      map,
+      label: "Home"
+    });
+
+    new google.maps.Marker({
+      position: SCHOOL,
+      map,
+      label: "School"
+    });
+
+    // Route
+    directionsService.route(
+      {
+        origin: currentLocation,
+        destination: SCHOOL,
+        waypoints: [{ location: HOME }],
+        travelMode: google.maps.TravelMode.DRIVING
+      },
+      (response, status) => {
+        if (status === "OK") {
+          directionsRenderer.setDirections(response);
+        } else {
+          alert("Directions request failed: " + status);
+        }
+      }
+    );
+  }
+
+  // Get live user location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        initMap({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      () => {
+        alert("Location access denied.");
+      }
+    );
+  } else {
+    alert("Geolocation not supported.");
+  }
+</script>
+
+</body>
+</html>

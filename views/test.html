@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DinesNDash - Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- CSS VARIABLES (Shared) --- */
+        :root {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --primary-light: #fff1f2;
+            --dark: #111827;
+            --gray: #6b7280;
+            --light-gray: #f3f4f6;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 1rem;
+            --header-height: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--light-gray); color: var(--dark); overflow-x: hidden; }
+        button { cursor: pointer; border: none; font-family: inherit; background: none; }
+        input { font-family: inherit; }
+
+        /* --- LAYOUT --- */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR (Desktop) --- */
+        .sidebar {
+            width: 260px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            color: var(--gray);
+            border-radius: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .user-profile {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--dark);
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            margin-left: 260px; /* Sidebar width */
+            padding: 2rem;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+        .welcome-text p { color: var(--gray); font-size: 0.9rem; }
+
+        .search-container {
+            position: relative;
+            width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            width: 18px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: var(--white);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover { background: var(--light-gray); border-color: var(--gray); }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--light-gray);
+        }
+
+        /* --- FILTERS --- */
+        .categories {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        .categories::-webkit-scrollbar { display: none; }
+
+        .category-chip {
+            padding: 0.75rem 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-chip:hover { border-color: var(--primary); color: var(--primary); }
+        
+        .category-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* --- GRID --- */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .food-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+        }
+
+        .card-image {
+            height: 180px;
+            position: relative;
+        }
+
+        .card-image img { width: 100%; height: 100%; object-fit: cover; }
+
+        .time-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-content { padding: 1.5rem; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .item-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem; }
+        .restaurant-name { font-size: 0.85rem; color: var(--gray); display: flex; align-items: center; gap: 4px; }
+        
+        .item-price { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+
+        .add-btn {
+            width: 100%;
+            background: var(--dark);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover { background: var(--primary); }
+
+        /* --- CART DRAWER --- */
+        .cart-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .cart-overlay.open { opacity: 1; pointer-events: all; }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: 400px;
+            background: var(--white);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+        }
+
+        .cart-drawer.open { transform: translateX(0); }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .cart-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 0.75rem;
+            object-fit: cover;
+        }
+
+        .cart-item-details { flex: 1; }
+        .cart-item-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .cart-item-price { color: var(--primary); font-weight: 700; }
+        
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .qty-btn {
+            background: var(--light-gray);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            line-height: 0;
+        }
+
+        .cart-footer {
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .cart-total-row.final {
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 1.25rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .checkout-btn:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3); }
+
+        .empty-cart-msg {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 4rem;
+        }
+
+        /* --- MOBILE --- */
+        .mobile-toggle { display: none; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: block; font-size: 1.5rem; }
+            .header { gap: 1rem; }
+            .search-container { display: none; } /* Hide search on small screens for simplicity */
+        }
+        
+        @media (max-width: 480px) {
+            .cart-drawer { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <i data-lucide="utensils-crossed" style="color: var(--primary)"></i>
+                <span>Dines<span style="color: var(--primary)">N</span>Dash</span>
+            </div>
+
+            <nav>
+                <a href="#" class="nav-item active"><i data-lucide="layout-grid" width="20"></i> Dashboard</a>
+                <a href="#" class="nav-item"><i data-lucide="heart" width="20"></i> Favorites</a>
+                <a href="#" class="nav-item"><i data-lucide="clock" width="20"></i> Orders</a>
+                <a href="#" class="nav-item"><i data-lucide="credit-card" width="20"></i> Wallet</a>
+                <a href="#" class="nav-item"><i data-lucide="settings" width="20"></i> Settings</a>
+            </nav>
+
+            <div class="user-profile">
+                <div class="avatar">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="User">
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.9rem;">Alex Morgan</div>
+                    <div style="font-size: 0.8rem; color: var(--gray);">Premium Member</div>
+                </div>
+                <button style="margin-left: auto; color: var(--gray);"><i data-lucide="log-out" width="18"></i></button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i data-lucide="menu"></i>
+                </button>
+
+                <div class="welcome-text">
+                    <h1>Hungry, Alex? 🍔</h1>
+                    <p>Let's find you something delicious.</p>
+                </div>
+
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search food, restaurants..." id="searchInput" onkeyup="filterFood()">
+                </div>
+
+                <div class="header-actions">
+                    <button class="action-btn" onclick="toggleCart()">
+                        <i data-lucide="shopping-bag" width="20"></i>
+                        <div class="badge" id="cart-badge">0</div>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Categories / Filters -->
+            <div class="categories" id="filterContainer">
+                <button class="category-chip active" onclick="setFilter('all', this)">
+                    All
+                </button>
+                <button class="category-chip" onclick="setFilter('trending', this)">
+                    <i data-lucide="flame" width="16"></i> Trending
+                </button>
+                <button class="category-chip" onclick="setFilter('near', this)">
+                    <i data-lucide="map-pin" width="16"></i> Near You
+                </button>
+                <button class="category-chip" onclick="setFilter('healthy', this)">
+                    <i data-lucide="leaf" width="16"></i> Healthy
+                </button>
+                <button class="category-chip" onclick="setFilter('fast', this)">
+                    <i data-lucide="zap" width="16"></i> Fast Delivery
+                </button>
+            </div>
+
+            <!-- Food Grid -->
+            <div class="food-grid" id="foodGrid">
+                <!-- Javascript will populate this -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Cart Sidebar/Drawer -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h2 style="font-size: 1.5rem;">Your Cart</h2>
+            <button onclick="toggleCart()"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items injected here -->
+            <div class="empty-cart-msg">Your cart is empty. <br>Start adding some yummy food!</div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span>Subtotal</span>
+                <span id="cartSubtotal">$0.00</span>
+            </div>
+            <div class="cart-total-row">
+                <span>Delivery Fee</span>
+                <span>$2.00</span>
+            </div>
+            <div class="cart-total-row final">
+                <span>Total</span>
+                <span id="cartTotal">$2.00</span>
+            </div>
+            <button class="checkout-btn" onclick="alert('Proceeding to checkout!')">Checkout</button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- MOCK DATA ---
+        const foodData = [
+            { id: 1, name: "Double Smash Burger", restaurant: "Burger Kingpin", price: 12.99, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "25 min", tags: ["trending", "fast"] },
+            { id: 2, name: "Spicy Pepperoni", restaurant: "Pizza Hutless", price: 18.50, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "35 min", tags: ["trending", "near"] },
+            { id: 3, name: "Salmon Nigiri Set", restaurant: "Sushi Zen", price: 24.00, image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "40 min", tags: ["healthy"] },
+            { id: 4, name: "Vegan Power Bowl", restaurant: "Green Life", price: 15.50, image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "20 min", tags: ["healthy", "near", "fast"] },
+            { id: 5, name: "Crispy Fried Chicken", restaurant: "Cluckin' Bell", price: 14.00, image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "30 min", tags: ["trending"] },
+            { id: 6, name: "Tacos Al Pastor", restaurant: "MexiGo", price: 11.00, image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80", time: "25 min", tags: ["fast", "near"] },
+        ];
+
+        // --- STATE ---
+        let cart = [];
+        let currentFilter = 'all';
+
+        // --- RENDER FOOD GRID ---
+        function renderFood(filter = 'all', searchTerm = '') {
+            const grid = document.getElementById('foodGrid');
+            grid.innerHTML = '';
+
+            const filtered = foodData.filter(item => {
+                const matchesFilter = filter === 'all' || item.tags.includes(filter);
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                      item.restaurant.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--gray); padding: 2rem;">No items found matching criteria.</div>';
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'food-card';
+                card.innerHTML = `
+                    <div class="card-image">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="time-badge"><i data-lucide="clock" width="12" style="display:inline; vertical-align:middle"></i> ${item.time}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <div>
+                                <div class="item-name">${item.name}</div>
+                                <div class="restaurant-name"><i data-lucide="store" width="12"></i> ${item.restaurant}</div>
+                            </div>
+                            <div class="item-price">$${item.price}</div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+                            ${item.tags.map(tag => `<span style="font-size:0.7rem; background:var(--light-gray); padding:2px 8px; borderRadius:4px; color:var(--gray); text-transform:capitalize">${tag}</span>`).join('')}
+                        </div>
+                        <button class="add-btn" onclick="addToCart(${item.id})">Add to Cart</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // --- CART LOGIC ---
+        function addToCart(id) {
+            const item = foodData.find(f => f.id === id);
+            const existing = cart.find(c => c.id === id);
+
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+            updateCartUI();
+            toggleCart(true); // Open cart to show user
+        }
+
+        function updateCartQty(id, change) {
+            const index = cart.findIndex(c => c.id === id);
+            if (index === -1) return;
+
+            cart[index].qty += change;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartList = document.getElementById('cartItems');
+            const badge = document.getElementById('cart-badge');
+            const subtotalEl = document.getElementById('cartSubtotal');
+            const totalEl = document.getElementById('cartTotal');
+
+            // Badge
+            const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
+            badge.innerText = totalCount;
+
+            // List
+            if (cart.length === 0) {
+                cartList.innerHTML = '<div class="empty-cart-msg">Your cart is empty.</div>';
+                subtotalEl.innerText = '$0.00';
+                totalEl.innerText = '$0.00';
+                return;
+            }
+
+            cartList.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                subtotal += item.price * item.qty;
+                const el = document.createElement('div');
+                el.className = 'cart-item';
+                el.innerHTML = `
+                    <img src="${item.image}" alt="Food">
+                    <div class="cart-item-details">
+                        <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-price">$${item.price}</div>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateCartQty(${item.id}, -1)">-</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn" onclick="updateCartQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+                cartList.appendChild(el);
+            });
+
+            // Totals
+            const delivery = 2.00;
+            const total = subtotal + delivery;
+            
+            subtotalEl.innerText = '$' + subtotal.toFixed(2);
+            totalEl.innerText = '$' + total.toFixed(2);
+        }
+
+        function toggleCart(forceOpen = false) {
+            const drawer = document.getElementById('cartDrawer');
+            const overlay = document.getElementById('cartOverlay');
+            
+            if (forceOpen) {
+                drawer.classList.add('open');
+                overlay.classList.add('open');
+            } else {
+                drawer.classList.toggle('open');
+                overlay.classList.toggle('open');
+            }
+        }
+
+        // --- FILTER & SEARCH ---
+        function setFilter(type, btn) {
+            currentFilter = type;
+            
+            // Update UI
+            document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Logic
+            const searchVal = document.getElementById('searchInput').value;
+            renderFood(currentFilter, searchVal);
+        }
+
+        function filterFood() {
+            const val = document.getElementById('searchInput').value;
+            renderFood(currentFilter, val);
+        }
+
+        // --- SIDEBAR MOBILE ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Initial Render
+        renderFood();
+
+    </script>
+</body>
+</html>

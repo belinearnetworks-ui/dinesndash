@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DND Wallet | <%= Wallet.storename %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --dark: #0f172a;
+            --success: #10b981;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --white: #ffffff;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background-color: var(--gray-50);
+            color: var(--dark);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* --- WALLET CARD --- */
+        .wallet-card {
+            background: var(--dark);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-card::after {
+            content: '';
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .withdraw-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .withdraw-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* --- TABLE SECTION --- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            background: var(--white);
+            border-radius: 1.25rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: var(--gray-50);
+            padding: 1rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-600);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 700;
+            display: block;
+        }
+
+        .price-text {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Status Badges */
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .status.paid { background: #dcfce7; color: #166534; }
+        .status.pending { background: #fef9c3; color: #854d0e; }
+
+        .date-text {
+            color: var(--gray-600);
+            font-size: 0.8rem;
+        }
+
+        .feedback-cell {
+            color: var(--gray-600);
+            font-style: italic;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 600px) {
+            .wallet-card { flex-direction: column; text-align: center; gap: 1.5rem; }
+            .feedback-cell, .collected-at-header, .collected-at-cell { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="wallet-card">
+            <div>
+                <span class="balance-label">Wallet Balance: <%= Wallet.storename %></span>
+                <p class="balance-amount">R <%= Wallet.amount %></p>
+            </div>
+            <button class="withdraw-btn">
+                <i class="fa-solid fa-building-columns"></i> Withdraw Funds
+            </button>
+        </div>
+
+        <div class="section-header">
+            <h3>Recent Sales</h3>
+            <a href="/orders/store/<%= Wallet.store_id %>" class="view-all">View All Orders</a>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Details</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th class="collected-at-header">Collected At</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% Sales.forEach(item => { %>
+                    <tr>
+                        <td>
+                            <span class="item-name"><%= item.meal_name %></span>
+                        </td>
+                        <td>
+                            <span class="price-text">R <%= item.amount %></span>
+                        </td>
+                        <td>
+                            <span class="status <%= item.payment_status.toLowerCase() %>">
+                                <%= item.payment_status %>
+                            </span>
+                        </td>
+                        <td class="collected-at-cell">
+                            <span class="date-text"><%= item.collected_at || 'Not yet' %></span>
+                        </td>
+                        <td class="feedback-cell">
+                            <%= item.feedback_message || 'No feedback yet' %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

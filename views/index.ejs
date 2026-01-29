@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dine n Dash - Shop Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="logo-icon">
+                        <i data-lucide="chef-hat"></i>
+                    </div>
+                    <h1>Dine n Dash</h1>
+                </div>
+                <div class="user-info">
+                    <span id="shop-name">Burger Palace</span>
+                    <button class="btn-outline" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <!-- Stats Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Weekly Orders</h3>
+                        <i data-lucide="package"></i>
+                    </div>
+                    <div class="stat-value">264</div>
+                    <div class="stat-change">+12% from last week</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Weekly Revenue</h3>
+                        <i data-lucide="dollar-sign"></i>
+                    </div>
+                    <div class="stat-value">R6,580.00</div>
+                    <div class="stat-change">+8% from last week</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Average Order</h3>
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <div class="stat-value">R24.92</div>
+                    <div class="stat-change">+2% from last week</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>Menu Items</h3>
+                        <i data-lucide="chef-hat"></i>
+                    </div>
+                    <div class="stat-value">6</div>
+                    <div class="stat-change">Active items</div>
+                </div>
+            </div>
+            
+            <!-- Menu Management -->
+            <div class="menu-card">
+                <div class="card-header">
+                    <h2>Menu Management</h2>
+                    <p>Manage your restaurant menu and track weekly sales</p>
+                </div>
+                
+                <div class="menu-sections">
+                    <div class="menu-section">
+                        <h3>Kotas</h3>
+                        <div class="menu-items">
+                            <div class="menu-item">
+                                <div class="item-info">
+                                    <div class="item-header">
+                                        <h4>Kota 1</h4>
+                                        <span class="badge available">Available</span>
+                                        <span class="badge size">Regular</span>
+                                    </div>
+                                    <p>Classic kota with polony, egg, and cheese</p>
+                                    <div class="item-details">
+                                        <span class="price">R25.00</span>
+                                        <span class="prep-time">
+                                            <i data-lucide="clock"></i> 15 min
+                                        </span>
+                                        <span class="ingredients">
+                                            Ingredients: Bread, Polony, Egg, Cheese, Tomato, Lettuce
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="item-sales">
+                                    <div class="sales-number">45</div>
+                                    <div class="sales-text">sold this week</div>
+                                </div>
+                            </div>
+
+                            <div class="menu-item">
+                                <div class="item-info">
+                                    <div class="item-header">
+                                        <h4>Kota 2</h4>
+                                        <span class="badge available">Available</span>
+                                        <span class="badge size">Regular</span>
+                                    </div>
+                                    <p>Classic kota with polony, egg, and cheese</p>
+                                    <div class="item-details">
+                                        <span class="price">R35.00</span>
+                                        <span class="prep-time">
+                                            <i data-lucide="clock"></i> 15 min
+                                        </span>
+                                        <span class="ingredients">
+                                            Ingredients: Bread, Polony, Chips,  Cheese, Egg
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="item-sales">
+                                    <div class="sales-number">25</div>
+                                    <div class="sales-text">sold this week</div>
+                                </div>
+                            </div>
+
+                            <div class="menu-item">
+                                <div class="item-info">
+                                    <div class="item-header">
+                                        <h4>Kota 3</h4>
+                                        <span class="badge available">Available</span>
+                                        <span class="badge size">Regular</span>
+                                    </div>
+                                    <p>Classic kota with polony, egg, and cheese</p>
+                                    <div class="item-details">
+                                        <span class="price">R40.00</span>
+                                        <span class="prep-time">
+                                            <i data-lucide="clock"></i> 15 min
+                                        </span>
+                                        <span class="ingredients">
+                                            Ingredients: Bread, Chips, Polony, Egg, Cheese, Russian
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="item-sales">
+                                    <div class="sales-number">19</div>
+                                    <div class="sales-text">sold this week</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Item Section -->
+                    <div class="add-item-section">
+                        <i data-lucide="chef-hat" class="add-icon"></i>
+                        <h3>Add New Menu Item</h3>
+                        <p>Expand your menu with new delicious items</p>
+                        <a href="add-item.html" class="btn-primary">
+                            <i data-lucide="plus"></i> Add New Item
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="shop.js"></script>
+</body>
+</html>

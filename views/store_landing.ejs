@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store Command Center</title>
+    <script>
+      let id = <%- JSON.stringify(store_id) -%>;
+      let All_categories=<%- JSON.stringify(cat_names) -%>;
+      let your_categories=<%- JSON.stringify(your_cat_names) -%>;
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+   <link rel="stylesheet" href="/store_landing.css">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand"><i class="fa-solid fa-store"></i> <%= Name %></div>
+      <ul class="nav-links">
+        <li>
+          <a href="#" class="active"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+        </li>
+        <li>
+          <a href="/all/products"><i class="fa-solid fa-box-open"></i> Products</a>
+        </li>
+        <li>
+          <a href="/categories"><i class="fa-solid fa-list"></i> Categories</a>
+        </li>
+        <li>
+          <a href="/full/store/orders"><i class="fa-solid fa-cart-shopping"></i> Orders</a>
+        </li>
+        <li>
+          <a href="/customers/for/<%= store_id %>"><i class="fa-solid fa-users"></i> Customers</a>
+        </li>
+        <li>
+          <a href="/wallet/for/store/<%= store_id %>"><i class="fa-solid fa-wallet"></i> Wallet </a>
+        </li>
+        <li><a href=""><i class="fa-solid fa-arrow-trend-up"></i> Promote Product</a></li>
+
+      </ul>
+      <div style="margin-top: auto">
+        <ul class="nav-links">
+          <li>
+            <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+          </li>
+          <li>
+            <a href="#" id="logout"
+              ><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+            >
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header>
+        <div class="title-block">
+          <h1>Overview</h1>
+          <span style="color: var(--text-muted); font-size: 0.9rem"
+            >Welcome back, Admin</span
+          >
+        </div>
+        <div class="user-profile">
+          <i
+            class="fa-regular fa-bell"
+            style="font-size: 1.2rem; margin-right: 15px; cursor: pointer"
+          ></i>
+          <div class="avatar">AD</div>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Sales:</h3>
+          <div class="value">R <%= Total %></div>
+        </div>
+        <div class="stat-card">
+          <h3>Active Orders</h3>
+          <div class="value"><%= pending %></div>
+          <div class="trend" style="color: #ffaa00">
+            <i class="fa-solid fa-clock"></i> Pending
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>Categories</h3>
+          <div class="value"><%= Data ? Data.length : 0 %></div>
+          <div class="trend" style="color: var(--text-muted)">In catalog</div>
+        </div>
+      </div>
+      <div class="table-container" style="margin-top: 30px">
+        <div class="section-header">
+          <h4 style="margin: 0; font-weight: 500">Recent Orders</h4>
+          <a
+            href="#"
+            style="
+              color: var(--accent);
+              text-decoration: none;
+              font-size: 0.85rem;
+            "
+            >View All</a
+          >
+        </div>
+        <% if(Orders.length==0){%>
+        <div style="padding: 20px; color: var(--text-muted); font-size: 0.9rem">
+          No recent orders to display.
+        </div>
+        <%}else if(Orders.length>0){%>
+        <table>
+          <tr>
+            <th>Order Code</th>
+            <th>Meal Name</th>
+            <th>Order By</th>
+            <th>Payment Status</th>
+            <th>Quantity</th>
+            <th>Order Action</th>
+          </tr>
+          <% Orders.forEach((order,index)=>{%>
+          <tr>
+            <td>
+              <span style="font-family: monospace; color: var(--accent)"
+                ><%= order.meal_id %></span
+              >
+            </td>
+            <td><%= order.meal_name %></td>
+            <td><%= order.fullname %></td>
+            <td><%= order.payment_status %></td>
+            <td><%= order.quantity %></td>
+            <td id="<%= index %>">
+              <% if(order.order_status=="PAID"){%>
+              <button
+                class="AcceptOrderBtn"
+                meal_id="<%= order.meal_id %>"
+                order_id="<%= order.id %>"
+                index="<%= index %>"
+              >
+                <i class="fa-solid fa-check"></i> Accept Order
+              </button>
+              <%}else if(order.order_status=="ACCEPTED"){%>
+              <button
+                class="OrderReadyBtn"
+                meal_id="<%= order.meal_id %>"
+                order_id="<%= order.id %>"
+                id="btn-<%= index %>"
+                index="<%= index %>"
+              >
+                <i class="fa-solid fa-bell-concierge"></i> Order Ready
+              </button>
+              <%}else if(order.order_status=="READY"){%>
+              <button
+                class="OrderCollectBtn"
+                meal_id="<%= order.meal_id %>"
+                order_id="<%= order.id %>"
+                id="btn-<%= index %>"
+                index="<%= index %>"
+              >
+                <i class="fa-solid fa-handshake"></i> Collected
+              </button>
+              <%} %>
+            </td>
+          </tr>
+          <%}) %>
+        </table>
+        <%} %>
+      </div>
+      <br /><br />
+      <div class="action-bar">
+        <h2>Categories</h2>
+        <button id="create"><i class="fa fa-plus"></i> New Category</button>
+      </div>
+
+      <div class="table-container">
+        <div class="section-header">
+          <h4 style="margin: 0; font-weight: 500">All Categories</h4>
+          <i
+            class="fa-solid fa-filter"
+            style="color: var(--text-muted); cursor: pointer"
+          ></i>
+        </div>
+
+        <% if(!Data || Data.length == 0){ %>
+        <div class="no-data">
+          <i
+            class="fa-regular fa-folder-open"
+            style="font-size: 2rem; margin-bottom: 15px; display: block"
+          ></i>
+          No categories found. Create one to get started!
+        </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Category Name</th>
+              <th>ID</th>
+              <th>Status</th>
+              <th style="text-align: right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% Data.forEach(cat => { %>
+            <tr>
+              <td style="font-weight: 500; color: #fff">
+                <i
+                  class="fa-solid fa-tag"
+                  style="margin-right: 10px; color: var(--accent)"
+                ></i>
+                <%= cat.catagory_name %>
+              </td>
+              <td style="color: var(--text-muted)">#<%= cat.Cat_id %></td>
+              <td>
+                <span
+                  style="
+                    background: rgba(0, 255, 136, 0.1);
+                    color: #00ff88;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                  "
+                  >Active</span
+                >
+              </td>
+              <td style="text-align: right">
+                <a href="/category/<%= cat.Cat_id %>" class="action-btn">
+                  View
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </main>
+
+    <div id="modalOverlay2" class="modal-overlay">
+      <div id="OrderCode">
+        <form action="">
+          <h3>Confirm Collection</h3>
+          <p style="margin-bottom: 15px">
+            Please enter the 5-digit order code given by the customer.
+          </p>
+
+          <input
+            type="number"
+            placeholder="e.g. 54321"
+            name="order_code"
+            id="order_code"
+            required
+          />
+
+          <p
+            id="BackendResponse"
+            style="color: #ff4444; height: 20px; font-size: 0.85rem"
+          ></p>
+
+          <div class="form-actions" style="justify-content: center; gap: 10px">
+            <button id="cancel2" type="button">Cancel</button>
+            <button id="check-code">Check Code</button>
+            <button
+              style="background-color: inherit; border: none"
+              id="loading"
+            >
+              <div class="loader"></div>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+      <div id="TheCategoryForm">
+        <form
+          action="/new/category"
+          method="post"
+          enctype="multipart/form-data"
+          id="categoryForm"
+        >
+          <h3>Add Category</h3>
+          <p>Create a new section for your products.</p>
+
+          <!-- Category Picture Upload -->
+          <div class="cat-pic">
+            <h2>Category Picture (Highly Recommended)</h2>
+
+            <div class="fileInput">
+              <input
+                type="file"
+                name="images"
+                id="images"
+                accept="image/*"
+                style="display: none"
+              />
+
+              <label for="images" id="uploadLabel">
+                <div class="label-div">
+                  <i class="fa fa-cloud-upload" style="font-size: 50px"></i>
+                  <p>Click to upload images</p>
+                </div>
+              </label>
+
+              <div class="carousel-container" id="carousel">
+                <button type="button" class="delete-btn" id="deleteBtn">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button type="button" class="nav-btn prev-btn" id="prevBtn">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+
+                <div class="carousel-slide">
+                  <img id="previewImage" src="" alt="Preview" />
+                </div>
+
+                <button type="button" class="nav-btn next-btn" id="nextBtn">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+                <div class="counter" id="imgCounter">1 / 1</div>
+              </div>
+
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  class="std-btn btn-secondary"
+                  id="uploadMoreBtn"
+                >
+                  <i class="fa fa-plus-circle"></i> Upload More
+                </button>
+
+                <button
+                  style="display: none"
+                  type="button"
+                  class="std-btn btn-glow"
+                  id="editBtn"
+                >
+                  Edit with Ck studio
+                  <i class="fa fa-magic" style="margin-left: 8px"></i>
+                </button>
+              </div>
+            </div>
+            <input
+              type="file"
+              name="cat_pic"
+              id="cat_pic"
+              accept="image/*"
+              style="display: none"
+            />
+            <div class="selected-image-preview" id="imagePreview">
+              <img id="previewImage" src="" alt="Selected Image" />
+              <p>Selected Image</p>
+            </div>
+          </div>
+
+          <label
+            for="cat_name"
+            style="
+              font-size: 0.85rem;
+              color: #aaa;
+              display: block;
+              margin-bottom: 10px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            "
+            >Category Name</label
+          >
+          <input
+            type="text"
+            id="cat_name"
+            name="cat_name"
+            placeholder="e.g. Burgers, Kota, Drinks..."
+            required
+            autocomplete="off"
+          />
+
+          <!-- Suggested Categories -->
+          <div class="suggestions">
+            <h5>Top Categories Now</h5>
+            <div class="suggestions-buttons" id="suggestions-buttons">
+              <button type="button" class="suggestion-btn" data-category="Kota">
+                Kota
+              </button>
+              <button
+                type="button"
+                class="suggestion-btn"
+                data-category="Amagwinya"
+              >
+                Amagwinya (Vetkoek)
+              </button>
+              <button
+                type="button"
+                class="suggestion-btn"
+                data-category="Drinks"
+              >
+                Drinks
+              </button>
+              <button
+                type="button"
+                class="suggestion-btn"
+                data-category="Potatoes Chips/Fries"
+              >
+                Potatoes Chips/Fries
+              </button>
+              <button
+                type="button"
+                class="suggestion-btn"
+                data-category="Ice Creams"
+              >
+                Ice Creams
+              </button>
+            </div>
+          </div>
+
+          <!-- Stock Recommended Pictures -->
+          <div id="stock-rec-pics" style="display: none">
+            <div class="stock-images-container">
+              <h5>Recommended Pictures. Choose one</h5>
+              <div class="stock-images-grid" id="stockImagesGrid">
+                <!-- 5 images will be loaded here -->
+              </div>
+              <div class="selected-image-preview" id="StockPreview">
+                <img id="previewImageStock" src="" alt="Selected Image" />
+                <p>Selected Image</p>
+              </div>
+              <input
+                type="hidden"
+                name="selected_stock_image"
+                id="selectedStockImage"
+                value=""
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button id="cancel" type="button">Cancel</button>
+            <input type="submit" value="Create Category" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // ... (keep all your socket.io and variable declarations above)
+      let socket = io();
+      socket.on("Data Base Updated", () => {
+        console.log("Database updated");
+      });
+
+      socket.on("New Order Alert", (data) => {
+        let IDS = data.TheIds;
+        if (IDS.includes(id)) {
+          let NotificationSound = new Audio("/Notification_2.mp3");
+          NotificationSound.play();
+          setTimeout(() => {
+            alert("New Order Alert");
+            window.location.reload();
+          }, 2000);
+        }
+      });
+
+      socket.on("code match", () => {
+        window.location.reload();
+      });
+
+      // --- ALL VARIABLE DECLARATIONS IN ONE PLACE ---
+      const modal = document.getElementById("modalOverlay");
+      const createBtn = document.getElementById("create");
+      const cancelBtn = document.getElementById("cancel");
+      const inputField = document.getElementById("cat_name");
+      const stockContainer = document.getElementById("stock-rec-pics");
+      const stockImagesGrid = document.getElementById("stockImagesGrid");
+      const fileInput = document.getElementById("images"); // FIXED: Define fileInput here
+      const uploadLabel = document.getElementById("uploadLabel");
+      const carousel = document.getElementById("carousel");
+      const previewImage = document.getElementById("previewImage");
+      const uploadMoreBtn = document.getElementById("uploadMoreBtn");
+      const editBtn = document.getElementById("editBtn");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      let Keywords = ["kota", "amagwinya"];
+      let Keyword = new RegExp(`\\b(${Keywords.join("|")})\\b`, "i");
+
+      const deleteBtn = document.getElementById("deleteBtn");
+      const imgCounter = document.getElementById("imgCounter");
+      const selectedStockImageInput =
+        document.getElementById("selectedStockImage");
+      const categoryForm = document.getElementById("categoryForm");
+
+      let debounceTimer = null;
+      let selectedStockImage = null;
+      let currentIndex = 0;
+      let filesArray = [];
+      let OrderId = null;
+      let MealId = null;
+      let Quantity = null;
+
+      // Fix the duplicate ID issue - rename one of them
+      const carouselPreviewImage = document.getElementById("previewImage");
+      const stockPreviewImage = document.getElementById("previewImageStock"); // Change this in HTML too
+
+      function renderCarousel() {
+        if (filesArray.length === 0) return;
+
+        // Ensure index is valid
+        if (currentIndex >= filesArray.length) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = filesArray.length - 1;
+
+        const file = filesArray[currentIndex];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          carouselPreviewImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        imgCounter.textContent = `${currentIndex + 1} / ${filesArray.length}`;
+      }
+
+      // --- CAROUSEL FUNCTIONS ---
+
+      function updateFormState() {
+        if (filesArray.length > 0) {
+          uploadLabel.style.display = "none";
+          carousel.style.display = "block";
+          uploadMoreBtn.style.display = "block";
+          renderCarousel();
+        } else {
+          uploadLabel.style.display = "block";
+          carousel.style.display = "none";
+          uploadMoreBtn.style.display = "none";
+          editBtn.style.display = "none";
+          fileInput.value = ""; // Clear input
+        }
+      }
+
+      // --- EVENT LISTENERS ---
+
+      // 1. File Selection - FIXED: Properly handle FormData
+      fileInput.addEventListener("change", (e) => {
+        const newFiles = Array.from(e.target.files);
+        if (newFiles.length > 0) {
+          filesArray = [...filesArray, ...newFiles];
+          currentIndex = filesArray.length - 1; // Jump to newest
+          updateFormState();
+        }
+      });
+
+      // 2. Upload More
+      uploadMoreBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // 3. Carousel Navigation
+      prevBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          currentIndex--;
+          if (currentIndex < 0) currentIndex = filesArray.length - 1;
+          renderCarousel();
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          currentIndex++;
+          if (currentIndex >= filesArray.length) currentIndex = 0;
+          renderCarousel();
+        }
+      });
+
+      // 4. Delete Image - FIXED: Proper index adjustment
+      deleteBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          filesArray.splice(currentIndex, 1);
+          if (filesArray.length === 0) {
+            updateFormState();
+          } else {
+            // Adjust index if we deleted the last item
+            if (currentIndex >= filesArray.length) {
+              currentIndex = filesArray.length - 1;
+            }
+            renderCarousel();
+          }
+        }
+      });
+
+      function displayStock(Array) {
+        console.log("Display function called");
+        Array.forEach((pic, index) => {
+          console.log("Pic", pic);
+          const imageItem = document.createElement("div");
+          imageItem.className = "stock-image-item";
+          imageItem.dataset.imageUrl = pic;
+
+          const img = document.createElement("img");
+          img.src = pic;
+          img.alt = `Stock image ${index + 1}`;
+          img.loading = "lazy";
+
+          const checkmark = document.createElement("div");
+          checkmark.className = "checkmark";
+          checkmark.innerHTML = '<i class="fa-solid fa-check"></i>';
+
+          imageItem.appendChild(img);
+          imageItem.appendChild(checkmark);
+
+          imageItem.addEventListener("click", () => {
+            // Clear previous selection
+            clearStockImageSelection();
+            console.log("Stock image selected:", pic);
+            console.log("Now trying to remove upload label");
+            document.getElementById("uploadLabel").remove();
+
+            // Clear uploaded files
+            filesArray = [];
+            updateFormState();
+
+            // Clear file input
+            fileInput.value = "";
+
+            // Select this stock image
+            selectedStockImage = pic;
+            selectedStockImageInput.value = pic;
+            imageItem.classList.add("selected");
+
+            // Display stock image preview
+            document.getElementById("StockPreview").style.display = "block";
+            let Preview = document.createElement("img");
+            img.src = pic;
+            document.getElementById("StockPreview").appendChild(Preview);
+          });
+
+          stockImagesGrid.appendChild(imageItem);
+        });
+      }
+
+      function clearStockImageSelection() {
+        selectedStockImage = null;
+        selectedStockImageInput.value = "";
+        document.querySelectorAll(".stock-image-item").forEach((item) => {
+          item.classList.remove("selected");
+        });
+      }
+
+      // Fix the debounce timer - 500ms is better than 3500ms
+      inputField.addEventListener("input", () => {
+        console.log("Changes made on input field");
+
+        const value = inputField.value.trim().toLowerCase();
+
+        // Clear previous timer
+        clearTimeout(debounceTimer);
+
+        // Hide if empty
+        if (!value) {
+          stockContainer.style.display = "none";
+          stockImagesGrid.innerHTML = "";
+          return;
+        }
+
+        stockContainer.style.display = "block";
+        stockImagesGrid.innerHTML = '<div class="loader"></div>';
+
+        let regexp = new RegExp(`^${value}`, "i");
+
+        let match = Keywords.find((word) => word.startsWith(value));
+        let Matches = All_categories.filter((word) => regexp.test(word));
+
+        if (Matches.length > 0) {
+          Matches.forEach((Match) => {
+              document.getElementById("suggestions-buttons").innerHTML="";
+              let btn=document.createElement("button");
+              btn.textContent=Match;
+              btn.setAttribute("data-category",Math);
+              btn.className="suggestion-btn";
+              btn.onclick=e=>{
+                e.preventDefault()
+              }
+              document.getElementById("suggestions-buttons").appendChild(btn);
+          });
+        }
+
+        if (match) {
+          if (match == "amagwinya" || match == "vetkoek") {
+            console.log(match);
+            let images = [
+              "/amagwinya.jpeg",
+              "/amagwinya2.jpeg",
+              "/amagwinya3.jpeg",
+              "/amagwinya4.jpeg",
+              "/amagwinya5.jpeg",
+            ];
+            return displayStock(images);
+          } else if (match == "kota") {
+            console.log(match);
+            console.log("So we should render Kota keh");
+            let images = [
+              "/kota1.jpeg",
+              "/kota2.jpeg",
+              "/kota3.jpeg",
+              "/kota4.jpeg",
+              "/kota5.jpeg",
+            ];
+            return displayStock(images);
+          }
+        }
+
+        // Use shorter debounce (500ms instead of 3500ms)
+        debounceTimer = setTimeout(() => {
+          fetch("/stock/images", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: value }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              stockImagesGrid.innerHTML = "";
+
+              if (!data.status || !data.images || data.images.length === 0) {
+                stockImagesGrid.innerHTML =
+                  '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">No images found for this category</p>';
+                return;
+              }
+
+              // Display 5 images returned by backend
+              displayStock(data.images);
+              //   data.images.forEach((pic, index) => {
+              //     const imageItem = document.createElement("div");
+              //     imageItem.className = "stock-image-item";
+              //     imageItem.dataset.imageUrl = pic;
+
+              //     const img = document.createElement("img");
+              //     img.src = pic;
+              //     img.alt = `Stock image ${index + 1}`;
+              //     img.loading = "lazy";
+
+              //     const checkmark = document.createElement("div");
+              //     checkmark.className = "checkmark";
+              //     checkmark.innerHTML = '<i class="fa-solid fa-check"></i>';
+
+              //     imageItem.appendChild(img);
+              //     imageItem.appendChild(checkmark);
+
+              //     imageItem.addEventListener("click", () => {
+              //       // Clear previous selection
+              //       clearStockImageSelection();
+              //       console.log("Stock image selected:", pic);
+              //       console.log("Now trying to remove upload label");
+              //       document.getElementById("uploadLabel").remove();
+
+              //       // Clear uploaded files
+              //       filesArray = [];
+              //       updateFormState();
+
+              //       // Clear file input
+              //       fileInput.value = "";
+
+              //       // Select this stock image
+              //       selectedStockImage = pic;
+              //       selectedStockImageInput.value = pic;
+              //       imageItem.classList.add("selected");
+
+              //       // Display stock image preview
+              //       document.getElementById("StockPreview").style.display =
+              //         "block";
+              //       let Preview = document.createElement("img");
+              //       img.src = pic;
+              //       document.getElementById("StockPreview").appendChild(Preview);
+              //     });
+
+              //     stockImagesGrid.appendChild(imageItem);
+              //   });
+            })
+            .catch((err) => {
+              console.error(err);
+              stockImagesGrid.innerHTML =
+                '<p style="color: #ff4444; text-align: center; grid-column: 1 / -1;">Error loading images</p>';
+            });
+        }, 3500); // Reduced from 3500ms to 500ms
+      });
+
+      // Fix form submission to handle multiple files
+      categoryForm.addEventListener("submit", function (e) {
+        // If we have uploaded files, add them to FormData
+        if (filesArray.length > 0) {
+          // Create a new FormData object
+          const formData = new FormData();
+
+          // Add category name
+          formData.append(
+            "cat_name",
+            document.getElementById("cat_name").value
+          );
+
+          if (selectedStockImage == "" || selectedStockImage == null) {
+            return;
+            alert("Selected Stock Image=", selectedStockImage);
+          }
+
+          // Add stock image if selected
+          if (selectedStockImage) {
+            console.log("Stock Images Available");
+            formData.append("StockImage", selectedStockImage);
+          }
+
+          formData.append("images", fileInput.files[0]);
+
+          // Send via fetch instead of normal form submission
+          e.preventDefault();
+
+          fetch("/new/category", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                window.location.reload();
+              } else {
+                alert("Error creating category: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred while creating the category");
+            });
+
+          return false;
+        }
+        // If no files uploaded, let the form submit normally
+      });
+
+      // Show Modal
+      createBtn.addEventListener("click", () => {
+        modal.style.display = "block";
+        inputField.focus();
+      });
+
+      // Hide Modal
+      const closeModal = () => {
+        modal.style.display = "none";
+        // Reset form
+        categoryForm.reset();
+        filesArray = [];
+        currentIndex = 0;
+        imagePreview.style.display = "none";
+        stockContainer.style.display = "none";
+        stockImagesGrid.innerHTML = "";
+        selectedStockImage = null;
+        selectedStockImageInput.value = "";
+        updateFormState();
+        // Reset suggestion buttons
+        document.querySelectorAll(".suggestion-btn").forEach((b) => {
+          b.style.background = "rgba(51, 51, 255, 0.1)";
+          b.style.border = "1px solid rgba(51, 51, 255, 0.3)";
+        });
+      };
+
+      cancelBtn.addEventListener("click", closeModal);
+
+      // Close on clicking backdrop
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      // Close on Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.style.display === "block") {
+          closeModal();
+        }
+      });
+
+      // --- NEW LOGIC FOR MODAL 2 (ORDER CODE) ---
+      const modal2 = document.getElementById("modalOverlay2");
+      const cancelBtn2 = document.getElementById("cancel2");
+
+      // Close Modal 2
+      cancelBtn2.addEventListener("click", () => {
+        modal2.style.display = "none";
+        document.getElementById("BackendResponse").innerText = ""; // Clear errors on close
+        OrderId = null;
+        MealId = null;
+      });
+
+      // Close Modal 2 on backdrop click
+      modal2.addEventListener("click", (e) => {
+        if (e.target === modal2) {
+          modal2.style.display = "none";
+          document.getElementById("BackendResponse").innerText = "";
+          OrderId = null;
+          MealId = null;
+        }
+      });
+
+      document.querySelectorAll(".suggestion-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          let Value = btn.getAttribute("data-category");
+
+          inputField.value = Value;
+        });
+      });
+
+      // Order actions
+      let SafeCode = "86d75771-fd54-4f2e-9bc7-16b5d24df113";
+
+      // Add error handling to fetch requests
+      document.querySelectorAll(".AcceptOrderBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          console.log("Order accept button clicked");
+          let MealId = btn.getAttribute("meal_id");
+          let OrderId = btn.getAttribute("order_id");
+          let Index = btn.getAttribute("index");
+
+          try {
+            const response = await fetch(
+              `/checkout/second/order/action/${SafeCode}`,
+              {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  meal_id: MealId,
+                  order_id: OrderId,
+                  Status: "ACCEPTED",
+                }),
+              }
+            );
+
+            const data = await response.json();
+            if (data.status) {
+              window.location.reload();
+            } else {
+              console.error("Failed to accept order:", data.message);
+            }
+          } catch (err) {
+            console.error("Error:", err);
+            alert("An error occurred while accepting the order");
+          }
+        });
+      });
+
+      document.querySelectorAll(".OrderReadyBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          console.log("The order is ready!!");
+          let MealId = btn.getAttribute("meal_id");
+          let OrderId = btn.getAttribute("order_id");
+
+          try {
+            const response = await fetch(
+              `/checkout/second/order/action/${SafeCode}`,
+              {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  meal_id: MealId,
+                  order_id: OrderId,
+                  Status: "READY",
+                }),
+              }
+            );
+
+            const data = await response.json();
+            if (data.status) {
+              window.location.reload();
+            } else {
+              console.error("Failed to mark order as ready:", data.message);
+            }
+          } catch (err) {
+            console.error("Error:", err);
+            alert("An error occurred while marking the order as ready");
+          }
+        });
+      });
+
+      // Setup the "Collect" buttons
+      document.querySelectorAll(".OrderCollectBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          console.log("Collection button clicked");
+
+          // UI Updates
+          document.getElementById("modalOverlay2").style.display = "block";
+          document.getElementById("order_code").focus();
+
+          // Assign values to the global variables
+          OrderId = btn.getAttribute("order_id");
+          MealId = btn.getAttribute("meal_id");
+
+          console.log("Stored - Order:", OrderId, "Meal:", MealId);
+        });
+      });
+
+      // Setup the "Check Code" button
+      document.getElementById("check-code").addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // SAFETY CHECK: Ensure we actually have an OrderId before sending
+        if (!OrderId || !MealId) {
+          console.error("No order selected!");
+          alert("Please select an order to collect first.");
+          return;
+        }
+
+        document.getElementById("check-code").style.display = "none";
+        document.getElementById("loading").style.display = "inline";
+
+        let code = document.getElementById("order_code").value.trim();
+
+        if (!code) {
+          document.getElementById("check-code").style.display = "inline";
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("BackendResponse").innerText =
+            "Please enter a code";
+          return;
+        }
+
+        fetch('/check/order/code',{
+          method:"POST",
+          headers:{"content-type":"application/json"},
+          body:JSON.stringify({
+          OrderCode: code,
+          order_id: OrderId,
+          meal_id: MealId,
+          store_id:id
+        })
+        }).then(res=>res.json()).then(data=>{
+          console.log("Data",data);
+          if(data.Status){
+            window.location.reload()
+          }else{
+
+            document.getElementById("check-code").style.display = "inline";
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("BackendResponse").innerText = data.reason;
+          }
+        }).catch(err=>{
+          alert("Error:",err)
+        });
+
+        // Send to server
+        // socket.emit("check order code", {
+        //   OrderCode: code,
+        //   order_id: OrderId,
+        //   meal_id: MealId,
+        //   store_id:id
+        // });
+
+        // Optional: Reset input
+        document.getElementById("order_code").value = "";
+      });
+
+     document.getElementById("logout").addEventListener("click",e=>{
+      e.preventDefault();
+      fetch("/logout",{
+        method:"GET",
+        headers:{"content-type":"application/json"}
+      }).then(res=>res.json()).then(data=>{
+        console.log(data)
+        if(data.Status){
+          return window.location.href='/signup';
+        }
+      }).catch(err=>console.log(err))
+     })
+    </script>
+  </body>
+</html>

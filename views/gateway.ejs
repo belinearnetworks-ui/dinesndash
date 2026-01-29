@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | DinesNDash</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --primary-light: #fff1f2;
+        --dark: #0f172a;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-400: #94a3b8;
+        --gray-600: #475569;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        --radius: 1.25rem;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--gray-50);
+        color: var(--dark);
+        margin: 0;
+        padding: 2rem 1rem;
+        display: flex;
+        justify-content: center;
+        line-height: 1.5;
+      }
+
+      .checkout-container {
+        max-width: 1100px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2.5rem;
+      }
+
+      /* --- CARDS --- */
+      .card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-bottom: 1.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        letter-spacing: -0.02em;
+      }
+
+      .step-number {
+        background: var(--dark);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px; /* Modern squircle */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+
+      /* --- SAVED ITEMS (Selectable Tiles) --- */
+      .saved-item-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .saved-item {
+        border: 2px solid var(--gray-100);
+        padding: 1.25rem;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        background: var(--gray-50);
+      }
+
+      .saved-item:hover {
+        border-color: var(--primary);
+        background: var(--white);
+        transform: translateY(-2px);
+      }
+
+      .saved-item.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .saved-item p {
+        margin: 0 0 4px 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+
+      .saved-item .sub-text {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+        display: block;
+      }
+
+      .use-this-badge {
+        display: inline-block;
+        margin-top: 10px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* --- FORMS & INPUTS --- */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-bottom: 0.6rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="search"] {
+        width: 100%;
+        padding: 0.9rem 1.1rem;
+        border-radius: 0.85rem;
+        border: 2px solid var(--gray-100);
+        background: var(--gray-50);
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--white);
+        box-shadow: 0 0 0 4px var(--primary-light);
+      }
+
+      input[readonly] {
+        background-color: var(--gray-100);
+        color: var(--gray-400);
+        cursor: not-allowed;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: 0.85rem;
+        margin-top: 1rem;
+      }
+
+      .checkbox-group label {
+        margin: 0;
+        text-transform: none;
+        color: var(--dark);
+        font-size: 0.9rem;
+      }
+
+      input[type="checkbox"] {
+        accent-color: var(--primary);
+        width: 20px;
+        height: 20px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+      }
+
+      /* --- BUTTONS --- */
+      button {
+        width: 100%;
+        background: var(--dark);
+        color: white;
+        padding: 1.1rem;
+        border-radius: 0.85rem;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      button:hover {
+        background: #1e293b;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+        background: var(--white);
+        color: var(--dark);
+        border: 2px solid var(--gray-100);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-200);
+        box-shadow: none;
+        transform: none;
+      }
+
+      .btn-confirm {
+        background: var(--primary);
+        padding: 1.4rem;
+        font-size: 1.15rem;
+        margin-top: 1.5rem;
+      }
+      .btn-confirm:hover {
+        background: var(--primary-hover);
+      }
+
+      /* --- ORDER SUMMARY (SIDEBAR) --- */
+      .order-summary .card {
+        position: sticky;
+        top: 2rem;
+        background: linear-gradient(to bottom right, #ffffff, #fdfdfd);
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px dashed var(--gray-200);
+      }
+
+      .order-item:last-child {
+        border-bottom: none;
+      }
+
+      .total-row {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--dark);
+      }
+
+      .total-row span:last-child {
+        color: var(--primary);
+      }
+
+      /* --- RESPONSIVE --- */
+      @media (max-width: 950px) {
+        .checkout-container {
+          grid-template-columns: 1fr;
+        }
+        .order-summary {
+          order: -1;
+        }
+        .order-summary .card {
+          position: static;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+        .card {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="checkout-container">
+      <div class="checkout-form-side">
+        <% if(type=="DILIVERY"){ %>
+        <div class="card" id="address-card">
+          <h2>
+            <span class="step-number" id="address-step-number">1</span> Delivery
+            Address
+          </h2>
+
+          <% if(addresses.length > 0){ %>
+
+          <div class="saved-item-grid">
+            <% addresses.forEach((address, index) => { %>
+            <div class="saved-item <%= index === 0 ? 'selected' : '' %>">
+              <p>
+                <i class="fa-solid fa-location-dot"></i> <%= address.address_1
+                %>
+              </p>
+              <span class="sub-text"
+                >Stand <%= address.address_3 %>, Ext <%= address.address_2
+                %></span
+              >
+
+              <button
+                onclick="document.getElementById('address-form').style.display='none';paymentSection.style.display = 'block';standInput.value='<%= address.address_3 %>';ext.value='<%= address.address_2 %>';oldAddress=true;"
+              >
+                <span class="use-this-badge">Deliver Here</span>
+              </button>
+            </div>
+            <% }) %>
+          </div>
+          <button
+            class="btn-secondary"
+            onclick="document.getElementById('address-form').style.display='block'"
+          >
+            <i class="fa-solid fa-plus"></i> Add New Address
+          </button>
+          <% } else { %>
+          <div class="form-group">
+            <label>Find Stand Number</label>
+            <input
+              type="search"
+              id="address"
+              placeholder="Search by stand number..."
+            />
+          </div>
+          <div class="form-group">
+            <label>City / Town</label>
+            <input type="text" id="town" value="Thuli Fakude" readonly />
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Stand Number</label>
+              <input type="number" id="stand-no" placeholder="e.g. 7655" />
+            </div>
+            <div class="form-group">
+              <label>Extension</label>
+              <input type="number" id="ext" placeholder="e.g. 19" />
+            </div>
+          </div>
+          <div class="form-group">
+              <label for="">Extra address info</label>
+              <textarea name="extraInfo" id="extraInfo" placeholder="Eg: Black house opposite the red tavern..." style="width: 100%;height: 100px;padding: 10px;"></textarea>
+            </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="save-address" checked />
+            <label for="save-address"
+              >Save this address for future orders</label
+            >
+          </div>
+          <button type="button" id="btn-continue">
+            Next: Payment Method <i class="fa-solid fa-arrow-right"></i>
+          </button>
+
+          <% } %> <% } %>
+          <div id="address-form" style="display: none">
+            <div class="form-group">
+              <label>Find Stand Number</label>
+              <input
+                type="search"
+                id="address"
+                placeholder="Search by stand number..."
+              />
+            </div>
+            <div class="form-group">
+              <label>City / Town</label>
+              <input type="text" id="town" value="Thuli Fakude" readonly />
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Stand Number</label>
+                <input type="number" id="stand-no" placeholder="e.g. 7655" />
+              </div>
+              <div class="form-group">
+                <label>Extension</label>
+                <input type="number" id="ext" placeholder="e.g. 19" />
+              </div>
+              <div class="form-group">
+                <label for="">Extra address info</label>
+                <textarea name="extraInfo" id="extraInfo" placeholder="Eg: Black house opposite the red tavern..." style="width: 120%;height: 100px;padding: 10px;"></textarea>
+              </div>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="save-address" checked />
+              <label for="save-address"
+                >Save this address for future orders</label
+              >
+            </div>
+            <button type="button" id="btn-continue">
+              Next: Payment Method <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="card payment-details" id="payment-details">
+          <h2>
+            <span class="step-number" id="card-step-number"></span> Payment
+            Method
+          </h2>
+
+          <% if(cards.length > 0){ %>
+          <div class="saved-item-grid">
+            <% cards.forEach((card, index) => { %>
+            <div class="saved-item saved-card">
+              <p>
+                <i class="fa-solid fa-credit-card"></i> Card Ending in <%=
+                card.card_number %><span style="margin-left: 1%;display: none;"><i class="fa-solid fa-circle-check"></i></span>
+              </p>
+              <span class="sub-text"
+                >Expires: <%= card.month %>/<%= card.year %></span
+              >
+              <span
+                class="use-this-badge use-card"
+                card_id='<%= card.card_id %>'
+                >Select Card</span
+              >
+            </div>
+            <% }) %>
+          </div>
+          <button
+            class="btn-secondary"
+            onclick="document.getElementById('card-form').style.display='block';"
+          >
+            <i class="fa-solid fa-plus"></i> Add New Card
+          </button>
+          <% } else { %>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            
+            <input
+              type="text"
+              id="card-name"
+              placeholder="Full name as on card"
+            />
+          </div>
+          <div class="form-group">
+            <label>Card Number</label>
+            <div style="position: relative">
+              <input
+                type="number"
+                id="card-number"
+                placeholder="0000 0000 0000 0000"
+              />
+              <i
+                class="fa-solid fa-shield-halved"
+                style="
+                  position: absolute;
+                  right: 15px;
+                  top: 14px;
+                  color: var(--gray-400);
+                "
+              ></i>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <input
+                  type="number"
+                  id="month"
+                  placeholder="MM"
+                  maxlength="2"
+                />
+                <span style="font-weight: bold; color: var(--gray-400)">/</span>
+                <input type="number" id="year" placeholder="YY" maxlength="2" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>CVV / CVC</label>
+              <input type="number" id="ccv" placeholder="123" maxlength="3" />
+            </div>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="save-details" checked />
+            <label for="save-details">Save card details securely</label>
+          </div>
+          <% } %>
+          <div id="card-form" style="display: none">
+            <div class="form-group">
+              <label>Cardholder Name</label>
+              <input
+                type="text"
+                id="card-name"
+                placeholder="Full name as on card"
+              />
+            </div>
+            <div class="form-group">
+              <label>Card Number</label>
+              <div style="position: relative">
+                <input
+                  type="number"
+                  id="card-number"
+                  placeholder="0000 0000 0000 0000"
+                />
+                <i
+                  class="fa-solid fa-shield-halved"
+                  style="
+                    position: absolute;
+                    right: 15px;
+                    top: 14px;
+                    color: var(--gray-400);
+                  "
+                ></i>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Expiry Date</label>
+                <div style="display: flex; gap: 8px; align-items: center">
+                  <input
+                    type="number"
+                    id="month"
+                    placeholder="MM"
+                    maxlength="2"
+                  />
+                  <span style="font-weight: bold; color: var(--gray-400)"
+                    >/</span
+                  >
+                  <input
+                    type="number"
+                    id="year"
+                    placeholder="YY"
+                    maxlength="2"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>CVV / CVC</label>
+                <input type="number" id="ccv" placeholder="123" maxlength="3" />
+              </div>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="save-details" checked />
+              <label for="save-details">Save card details securely</label>
+            </div>
+          </div>
+
+          <button
+            class="btn-confirm"
+            id="btn-confirm"
+            order_id="<%= order_id %>"
+          >
+            Confirm & Pay R <%= subtotal %>(Price includes delivery Fee of (<%= fee %>))
+          </button>
+        </div>
+      </div>
+
+      <div class="order-summary">
+        <div class="card">
+          <h2 style="margin-bottom: 0.5rem">Order Summary</h2>
+          <p
+            style="
+              font-size: 0.85rem;
+              color: var(--gray-600);
+              margin-bottom: 1.5rem;
+            "
+          >
+            Review your items before paying
+          </p>
+
+          <div class="order-list">
+            <% Orders.forEach(item => { %>
+            <div class="order-item">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem">
+                  <%= item.meal_name %>
+                </div>
+                <div
+                  style="
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: var(--gray-600);
+                  "
+                >
+                  Quantity: <%= item.quantity %>
+                </div>
+              </div>
+              <span style="font-weight: 700">R <%= item.amount %></span>
+            </div>
+            <% }) %>
+          </div>
+
+          <div class="total-row">
+            <span>Total</span>
+            <span>R<%= subtotal %></span><br><br>
+          </div>
+
+          <div
+            style="
+              margin-top: 2rem;
+              padding: 1rem;
+              border-radius: 0.75rem;
+              background: var(--gray-50);
+              border: 1px solid var(--gray-100);
+            "
+          >
+            <p
+              style="
+                font-size: 0.75rem;
+                color: var(--gray-600);
+                text-align: center;
+                margin: 0;
+              "
+            >
+              <i
+                class="fa-solid fa-lock"
+                style="color: #10b981; margin-right: 5px"
+              ></i>
+              Your payment is processed through a secure 256-bit encrypted
+              gateway.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="payfast" display="none"></div>
+    <script>
+      let delivery=<%- JSON.stringify(delivery) -%>;
+      console.log(delivery)
+      if(delivery.toLowerCase()=="dilivery"){
+        document.getElementById("address-step-number").innerHTML=1;
+        document.getElementById("card-step-number").innerHTML=2;
+        document.getElementById("payment-details").style.display="none"
+
+      }else{
+        document.getElementById("card-step-number").innerHTML=1;
+
+      }
+      // Selecting elements
+      const btnContinue = document.getElementById("btn-continue");
+      const paymentSection = document.getElementById("payment-details");
+      const standInput = document.getElementById("stand-no");
+      const addressCard = document.getElementById("address-card");
+      let cardNumber = document.getElementById("card-number");
+      let card_name = document.getElementById("card-name");
+      let cvv = document.getElementById("ccv");
+      let year = document.getElementById("year");
+      let month = document.getElementById("month");
+      let ext=document.getElementById("ext");
+      let oldAddress=false;
+      let OldCard=false;
+      let card_id;
+
+      // Flow Control
+      if (btnContinue) {
+        btnContinue.addEventListener("click", (e) => {
+          if (standInput.value.trim() !== "") {
+            paymentSection.style.display = "block";
+            paymentSection.scrollIntoView({ behavior: "smooth" });
+
+            // Visual feedback for completed step
+            addressCard.style.opacity = "0.4";
+            addressCard.style.transform = "scale(0.98)";
+            btnContinue.style.display = "none";
+          } else {
+            alert("Please enter your stand number to continue.");
+          }
+        });
+      }
+
+      document.querySelectorAll(".use-card").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          btn.parentElement.style.border='5px solid red';
+          btn.parentElement.style.backgroundColor="lightgreen";
+          OldCard=true;
+          card_id=btn.getAttribute("card_id");
+        })
+      })
+
+      // Submit Logic
+      document
+        .getElementById("btn-confirm")
+        .addEventListener("click", function () {
+          const order_id = this.getAttribute("order_id");
+
+          // Simple UI feedback
+          this.innerHTML =
+            '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+          this.style.pointerEvents = "none";
+
+          setTimeout(() => {
+            console.log("Processing order:", order_id);
+            // Your fetch/form submission logic here
+            let OrderId = document
+              .getElementById("btn-confirm")
+              .getAttribute("order_id");
+            let cardSave;
+
+            if(!OldCard){
+              console.log("Inside if statement")
+              if (
+                cvv.value.trim() == "" ||
+                cardNumber.value.trim() == "" ||
+                year.value.trim() == "" ||
+                month.value.trim() == "" ||
+                card_name.value.trim() == ""
+              ) {
+                return alert("payment details not fully filled");
+              }
+              cvv = cvv.value;
+              cardNumber = cardNumber.value;
+              card_name = card_name.value;
+              year = year.value;
+              month = month.value;
+              if (document.getElementById("save-details").checked) {
+                cardSave = true;
+              } else {
+                cardSave = false;
+              }
+            }
+
+            ext = ext.value;
+            stand = standInput.value;
+            let addressSave;
+            let town = document.getElementById("town").value;
+            let directions=document.getElementById("extraInfo").value;
+
+           if(!oldAddress){
+            console.log("Inside if statement")
+            if (document.getElementById("save-address").checked) {
+              addressSave = true;
+            } else {
+              addressSave = false;
+             }
+           }
+
+            fetch("/checkout/first", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                OrderId,
+                cvv,
+                cardNumber,
+                card_name,
+                month,
+                year,
+                ext,
+                stand,
+                oldAddress,
+                cardSave,
+                addressSave,
+                OldCard,
+                town,card_id,directions
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log(data);
+                if (data.Status) {
+                  document.getElementById("payfast").innerHTML=data.form;
+                  document.getElementById("payfast-btn").click()
+                }
+              })
+              .catch((err) => {
+                if (err) throw err;
+              });
+          }, 1500);
+        });
+    </script>
+  </body>
+</html>

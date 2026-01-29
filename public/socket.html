@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Receipt - #<%= order.id %></title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #e11d48;
+        --dark: #111827;
+        --gray: #6b7280;
+        --success: #10b981;
+        --border: #e5e7eb;
+        --bg: #f9fafb;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: 40px 20px;
+        color: var(--dark);
+      }
+
+      .receipt-wrapper {
+        max-width: 550px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Success Watermark/Banner */
+      .status-banner {
+        background-color: #ecfdf5;
+        color: var(--success);
+        text-align: center;
+        padding: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid #d1fae5;
+        margin: -40px -40px 30px -40px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+
+      .logo {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dark);
+      }
+      .logo span { color: var(--primary); }
+
+      .receipt-info {
+        text-align: right;
+      }
+      .receipt-info h1 {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--gray);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .order-num {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        padding-bottom: 30px;
+        border-bottom: 1px dashed var(--border);
+        margin-bottom: 30px;
+      }
+
+      .detail-item label {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--gray);
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .detail-item p {
+        margin: 0;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+      }
+      th {
+        text-align: left;
+        font-size: 0.75rem;
+        color: var(--gray);
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+      }
+      td {
+        padding: 16px 0;
+        font-size: 0.95rem;
+        border-bottom: 1px solid #f3f4f6;
+      }
+
+      .total-section {
+        margin-top: 20px;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+      .total-row.grand-total {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid var(--dark);
+        color: var(--dark);
+        font-weight: 800;
+        font-size: 1.25rem;
+      }
+
+      .thank-you {
+        text-align: center;
+        margin-top: 50px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border);
+      }
+      .thank-you h2 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+      }
+      .thank-you p {
+        font-size: 0.85rem;
+        color: var(--gray);
+        line-height: 1.5;
+      }
+
+      .print-btn {
+        display: block;
+        width: 100%;
+        max-width: 200px;
+        margin: 30px auto 0;
+        padding: 14px;
+        background: var(--dark);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .print-btn:hover { background: #000; }
+
+      @media print {
+        body { background: white; padding: 0; }
+        .receipt-wrapper { box-shadow: none; border: 1px solid var(--border); }
+        .print-btn { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="receipt-wrapper">
+      <div class="status-banner">
+        <i class="fas fa-check-circle"></i> Order Collected Successfully
+      </div>
+
+      <div class="header">
+        <div class="logo">Dines<span>N</span>Dash</div>
+        <div class="receipt-info">
+          <h1>Receipt For</h1>
+          <div class="order-num">#<%= order.id %></div>
+        </div>
+      </div>
+      <div class="logo" style="text-align: center;">
+        <img src="/assets/logo_3.png" height="300" alt="">
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Customer</label>
+          <p><%= user.fullname %></p>
+        </div>
+        <div class="detail-item" style="text-align: right;">
+          <label>Date Collected</label>
+          <p><%= new Date().toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }) %></p>
+        </div>
+        <div class="detail-item">
+          <label>Merchant</label>
+          <p><%= order.storename %></p>
+        </div>
+        <div class="detail-item" style="text-align: right;">
+          <label>Payment Method</label>
+          <p>Online Card</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item Description</th>
+            <th style="text-align: center;">Qty</th>
+            <th style="text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight: 600;"><%= order.meal_name %></td>
+            <td style="text-align: center;">x<%= order.quantity %></td>
+            <td style="text-align: right;">R<%= parseFloat(order.amount).toFixed(2) %></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="total-section">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span>R<%= parseFloat(order.amount).toFixed(2) %></span>
+        </div>
+        <div class="total-row">
+          <span>Platform Fee</span>
+          <span>R0.00</span>
+        </div>
+        <div class="total-row grand-total">
+          <span>Total Amount</span>
+          <span>R<%= parseFloat(order.amount).toFixed(2) %></span>
+        </div>
+      </div>
+
+      <div class="thank-you">
+        <h2>We hope you enjoyed your meal!</h2>
+        <p>
+          Thank you for choosing DinesNDash. Your support helps local merchants grow. 
+          See you for your next craving!
+        </p>
+        <div style="margin-top: 15px; font-size: 0.75rem; color: #cbd5e1;">
+          Transaction ID: TXN_<%= order.id %>_<%= Math.floor(Math.random() * 1000) %>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">
+      Save as PDF / Print
+    </button>
+    <script src="/assets/user_landing.js"></script>
+  </body>
+</html>

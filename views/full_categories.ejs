@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Categories | <%= Name %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --dark: #0f172a;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-600: #475569;
+        --white: #ffffff;
+        --sidebar-width: 260px;
+        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--gray-50);
+        margin: 0;
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* --- SIDEBAR --- */
+      .sidebar {
+        width: var(--sidebar-width);
+        background: var(--dark);
+        color: white;
+        padding: 1.5rem;
+        position: fixed;
+        height: 100vh;
+        box-sizing: border-box;
+      }
+
+      .brand { font-size: 1.25rem; font-weight: 800; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 0.75rem; }
+
+      .nav-links { list-style: none; padding: 0; }
+      .nav-links li { margin-bottom: 0.5rem; }
+      .nav-links a {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none;
+        border-radius: 0.75rem; font-weight: 600; transition: 0.2s;
+      }
+      .nav-links a:hover, .nav-links a.active { background: rgba(255, 255, 255, 0.1); color: white; }
+      .nav-links a.active { border-left: 4px solid var(--primary); }
+
+      /* --- MAIN CONTENT --- */
+      main { margin-left: var(--sidebar-width); flex: 1; padding: 2.5rem; }
+      h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 2rem; }
+
+      /* --- TABLE CARD --- */
+      .table-card {
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      table { width: 100%; border-collapse: collapse; }
+      th { background: var(--gray-50); padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; font-weight: 800; }
+      td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-100); }
+      tr:hover td { background-color: #fdf2f4; }
+
+      .actions {
+        padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--gray-200);
+        font-family: inherit; font-weight: 600; cursor: pointer;
+      }
+
+      /* --- MODAL --- */
+      #modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
+        z-index: 1000; justify-content: center; align-items: center;
+      }
+
+      .modal-card {
+        background: white; padding: 2rem; border-radius: 1.25rem;
+        width: 100%; max-width: 450px; box-shadow: var(--shadow);
+        position: relative;
+      }
+
+      .modal-card h2 { margin-top: 0; font-weight: 800; }
+
+      .form-group { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+      .form-group label { font-size: 0.85rem; font-weight: 700; color: var(--gray-600); }
+      .form-group input {
+        padding: 0.75rem; border: 1px solid var(--gray-200); border-radius: 0.5rem;
+        font-family: inherit; outline: none;
+      }
+
+      .category-preview { width: 100px; height: 100px; border-radius: 0.75rem; object-fit: cover; margin-bottom: 1rem; border: 2px solid var(--gray-100); }
+
+      .btn-primary { background: var(--primary); color: white; border: none; padding: 0.85rem; border-radius: 0.75rem; font-weight: 700; cursor: pointer; width: 100%; }
+      .btn-close { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--gray-600); }
+
+      @media (max-width: 900px) {
+        .sidebar { width: 80px; }
+        .sidebar span, .brand span { display: none; }
+        main { margin-left: 80px; }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand"><i class="fa-solid fa-store" style="color: var(--primary)"></i> <span><%= Name %></span></div>
+      <ul class="nav-links">
+        <li><a href="/home"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>
+        <li><a href="/all/products"><i class="fa-solid fa-box-open"></i> <span>Products</span></a></li>
+        <li><a href="/categories" class="active"><i class="fa-solid fa-list"></i> <span>Categories</span></a></li>
+        <li><a href="/full/store/orders"><i class="fa-solid fa-cart-shopping"></i> <span>Orders</span></a></li>
+        <li><a href="/customers/for/<%= store_id %>"><i class="fa-solid fa-users"></i> <span>Customers</span></a></li>
+        <li>
+          <a href="/wallet/for/store/<%= store_id %>"><i class="fa-solid fa-wallet"></i> Wallet </a>
+        </li>
+        <li><a href=""><i class="fa-solid fa-arrow-trend-up"></i> Promote Product</a></li>
+      </ul>
+    </aside>
+
+    <main>
+      <h1>All <%= Name %> Categories</h1>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>#Pos</th>
+              <th>Category Name</th>
+              <th>Total Sales</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% categories.forEach((item, index) => { %>
+            <tr>
+              <td><strong><%= index + 1 %></strong></td>
+              <td style="font-weight: 600;"><%= item.catagory_name %></td>
+              <td style="color: var(--primary); font-weight: 800;">R <%= item.total_sales || 0 %></td>
+              <td>
+                <select class="actions" onchange="handleAction(this, '<%= item.Cat_id %>')">
+                  <option value="">Actions</option>
+                  <option value="update">Update Category</option>
+                  <option value="delete">Delete Category</option>
+                </select>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <div id="modal-overlay">
+      <div class="modal-card">
+        <button class="btn-close" onclick="closeModal()">&times;</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <script>
+      const categories = <%- JSON.stringify(categories) -%>;
+
+      function closeModal() {
+        document.getElementById("modal-overlay").style.display = "none";
+      }
+
+      function handleAction(select, id) {
+        const action = select.value;
+        
+        const category = categories.find(c => String(c.Cat_id) === String(id));
+
+        if (action === "update" && category) {
+          const modalBody = document.getElementById("modal-body");
+          modalBody.innerHTML = `
+            <h2>Update Category</h2>
+            <form action="/update/category/${id}" method="POST" enctype="multipart/form-data">
+              <div class="form-group">
+                <label>Current Image</label>
+                <img src="${category.category_pic}" class="category-preview">
+                <input type="file" id="category_pic" name="category_pic">
+              </div>
+              <div class="form-group">
+                <label>Category Name</label>
+                <input type="text" id="category_name" name="category_name" value="${category.catagory_name}" required>
+              </div>
+              <div class="form-group">
+                <label>Store Safety Code</label>
+                <input type="password" id="safety_code" name="safety_code" placeholder="Enter security code" required>
+              </div>
+              <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+          `;
+          document.getElementById("modal-overlay").style.display = "flex";
+        } 
+        
+        if (action === "delete") {
+          if (confirm(`Are you sure you want to permanently delete "${category.catagory_name}"?`)) {
+            window.location.href = `/delete/category/${id}`;
+          }
+        }
+
+        // Reset the select dropdown
+        select.value = "";
+      }
+
+      // Close modal if user clicks on the backdrop
+      window.onclick = function(event) {
+        const overlay = document.getElementById("modal-overlay");
+        if (event.target == overlay) closeModal();
+      }
+    </script>
+  </body>
+</html>

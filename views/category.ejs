@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Meals</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      let TheId = <%- JSON.stringify(CategoryId) %>;
+      let StoreId = <%- JSON.stringify(StoreId) %>;
+    </script>
+    <style>
+      /* --- GLOBAL RESET & DARK THEME --- */
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        background-color: #050505; /* Deep Black Background */
+        color: #e0e0e0;
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      h1,
+      h3 {
+        font-weight: 300;
+        color: #fff;
+        margin-bottom: 15px;
+      }
+
+      h1 {
+        text-align: center;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 30px;
+      }
+
+      /* --- TABLE STYLING --- */
+      #MealsListing {
+        width: 100%;
+        overflow-x: auto;
+        margin-bottom: 30px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      th {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+      }
+
+      tr:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+
+      /* --- GLASSMORPHISM FORM CONTAINER --- */
+      .NewCategoryForm {
+        background: rgba(20, 20, 20, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      /* --- INPUTS & SELECTS --- */
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #3333ff;
+      }
+
+      /* --- UPLOAD AREA STYLES --- */
+      .fileInput {
+        margin-bottom: 30px;
+      }
+
+      .label-div {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #aaa;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .label-div:hover {
+        border-color: #fff;
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #fff;
+      }
+
+      .label-div i {
+        display: block;
+        margin-bottom: 15px;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .label-div:hover i {
+        transform: scale(1.2);
+        color: #fff;
+      }
+
+      /* --- CAROUSEL STYLES --- */
+      .carousel-container {
+        display: none; /* Hidden by default */
+        position: relative;
+        width: 100%;
+        height: 300px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .carousel-slide {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .carousel-slide img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      /* Carousel Controls */
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+        z-index: 10;
+      }
+
+      .nav-btn:hover {
+        background: white;
+        color: black;
+      }
+
+      .prev-btn {
+        left: 10px;
+      }
+      .next-btn {
+        right: 10px;
+      }
+
+      .delete-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(220, 38, 38, 0.8);
+        color: white;
+        border: none;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: 0.2s;
+      }
+
+      .delete-btn:hover {
+        background: #ef4444;
+        transform: scale(1.1);
+      }
+
+      .counter {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        color: #fff;
+      }
+
+      /* --- BUTTONS --- */
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .std-btn,
+      #new_meal,
+      #FinalCreate,
+      #cancel {
+        background: #fff;
+        color: #000;
+        border: none;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        width: 100%;
+      }
+
+      /* Primary Action Button */
+      #FinalCreate,
+      #new_meal {
+        background: linear-gradient(45deg, #3333ff, #00d4ff);
+        color: white;
+        box-shadow: 0 4px 15px rgba(51, 51, 255, 0.3);
+      }
+
+      #FinalCreate:hover,
+      #new_meal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(51, 51, 255, 0.5);
+      }
+
+      /* Secondary Buttons (Add Keyword, Add Ingredient) */
+      #AddKeyword,
+      #IngredientButton {
+        width: auto;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-top: -10px;
+        margin-bottom: 10px;
+      }
+
+      #AddKeyword:disabled,
+      #IngredientButton:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Specific Button Styles */
+      .btn-secondary {
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        color: white !important;
+        display: none;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .btn-glow {
+        display: none;
+        background: linear-gradient(45deg, #ff00cc, #3333ff) !important;
+        color: white !important;
+        box-shadow: 0 0 15px rgba(255, 0, 204, 0.4);
+      }
+
+      #cancel {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        margin-bottom: 10px;
+      }
+
+      #cancel:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* List Styling */
+      ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      ul li {
+        background: rgba(51, 51, 255, 0.2);
+        border: 1px solid rgba(51, 51, 255, 0.4);
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Flexbox helpers for time inputs */
+      .time-range {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .time-range span {
+        font-size: 0.9rem;
+        color: #aaa;
+      }
+      .time-range input {
+        margin-bottom: 0;
+      }
+      small {
+        color: red;
+      }
+      .loading {
+        width: 100%;
+        background-color: black;
+        height: 100%;
+        align-items: center;
+        position: fixed;
+        display: none;
+      }
+
+      .loader {
+        width: 120px;
+        height: 120px;
+        margin: auto;
+        margin-top: 20%;
+        animation: pop 2s infinite ease-in-out;
+      }
+
+      .circle {
+        width: 100%;
+        height: 100%;
+        border: 6px solid rgba(255, 255, 255, 0.15);
+        border-top-color: gold;
+        border-radius: 50%;
+        animation: spin 1.2s linear infinite;
+      }
+
+      .icons {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 38px;
+        color: white;
+        animation: bounce 1.1s infinite ease-in-out;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translate(-50%, -55%);
+        }
+        50% {
+          transform: translate(-50%, -45%);
+        }
+      }
+
+      @keyframes pop {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.06);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading" id="loading">
+      <div class="loader">
+        <div class="circle"></div>
+        <div class="icons">🍴</div>
+        <h3 style="color: white">Grilling...</h3>
+      </div>
+    </div>
+
+    <h1><%= Category_name %></h1>
+
+    <div id="MealsListing">
+      <table>
+        <tr>
+          <th>Meal Name</th>
+          <th>Price (Selling Price)</th>
+          <th>Average Waiting Time</th>
+          <th>Sales</th>
+          <th>Generated Revenue</th>
+        </tr>
+        <% meals.forEach(meal=>{%>
+        <tr>
+          <td><%= meal.meal_name %></td>
+          <td>R<%= meal.price %> (R<%= meal.SellingPrice %>)</td>
+          <td><%= meal.TimeFrom %> Min &rightarrow; <%= meal.TimeTo %> Min</td>
+          <td><%= meal.sales %></td>
+          <td></td>
+        </tr>
+        <%}) %>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px">
+      <button id="new_meal" style="max-width: 300px">
+        <i class="fa fa-plus"></i> Add New Meal
+      </button>
+    </div>
+
+    <div class="NewCategoryForm" id="NewCategoryForm" style="display: none">
+      <form action="" id="MealForm">
+        <h3>Meal Photos <small>*</small></h3>
+
+        <div class="fileInput">
+          <input
+            type="file"
+            name="images"
+            id="images"
+            accept="image/*"
+            style="display: none"
+            multiple
+          />
+
+          <label for="images" id="uploadLabel">
+            <div class="label-div">
+              <i class="fa fa-cloud-upload" style="font-size: 50px"></i>
+              <p>Click to upload images</p>
+            </div>
+          </label>
+
+          <div class="carousel-container" id="carousel">
+            <button type="button" class="delete-btn" id="deleteBtn">
+              <i class="fa fa-trash"></i>
+            </button>
+            <button type="button" class="nav-btn prev-btn" id="prevBtn">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+
+            <div class="carousel-slide">
+              <img id="previewImage" src="" alt="Preview" />
+            </div>
+
+            <button type="button" class="nav-btn next-btn" id="nextBtn">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+            <div class="counter" id="imgCounter">1 / 1</div>
+          </div>
+
+          <div class="action-buttons">
+            <button
+              type="button"
+              class="std-btn btn-secondary"
+              id="uploadMoreBtn"
+            >
+              <i class="fa fa-plus-circle"></i> Upload More
+            </button>
+
+            <button
+              style="display: none"
+              type="button"
+              class="std-btn btn-glow"
+              id="editBtn"
+            >
+              Edit with Ck studio
+              <i class="fa fa-magic" style="margin-left: 8px"></i>
+            </button>
+          </div>
+        </div>
+
+        <h3>Meal Name<small>*</small></h3>
+        <input
+          type="text"
+          placeholder="Eg: <%= Category_name %> Special"
+          id="MealName"
+          name="MealName"
+          required
+        />
+
+        <h3>Price (Rands)<small>*</small></h3>
+        <input
+          type="number"
+          name="price"
+          id="price"
+          placeholder="Eg: 20"
+          required
+        />
+
+        <h3>Ingredients<small>*</small></h3>
+        <div id="ingredients">
+          <div style="display: flex; gap: 10px">
+            <input type="text" placeholder="Eg: Cheese" id="IngredientsInput" />
+            <button id="IngredientButton" disabled>Add</button>
+          </div>
+          <ul id="IngregientsList"></ul>
+        </div>
+        <div id="WaitingMin">
+          <h3>Average Waiting time ( In Minutes)<small>*</small></h3>
+          <div class="time-range">
+            <span>From:</span>
+            <input
+              type="number"
+              name="from"
+              id="from"
+              placeholder="30"
+              required
+            />
+            <span>To:</span>
+            <input type="number" name="to" id="to" placeholder="50" required />
+            <span>Min</span>
+          </div>
+        </div>
+        <p id="warning"></p>
+        <div id="KeyWords">
+          <h3>
+            Keywords
+            <small style="font-size: 0.7rem; color: #aaa">(Optional)</small>
+          </h3>
+          <div style="display: flex; gap: 10px">
+            <input
+              type="text"
+              id="KeywordInput"
+              name="KeywordInput"
+              placeholder="Eg: Bunny chow, spicy..."
+            />
+            <button id="AddKeyword" disabled>ADD</button>
+          </div>
+          <ul id="KeyWordsList"></ul>
+        </div>
+
+        <br />
+        <p>
+          <i
+            >All
+            <b><small>*</small> fields are required or a must to fill</b></i
+          >
+        </p>
+        <div style="display: flex; gap: 15px">
+          <button id="cancel">Back</button>
+          <button id="FinalCreate">Create Meal</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("images");
+      const uploadLabel = document.getElementById("uploadLabel");
+      const carousel = document.getElementById("carousel");
+      const previewImage = document.getElementById("previewImage");
+
+      // Buttons
+      const uploadMoreBtn = document.getElementById("uploadMoreBtn");
+      const editBtn = document.getElementById("editBtn");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const imgCounter = document.getElementById("imgCounter");
+
+      let filesArray = [];
+      let currentIndex = 0;
+      let Ingredients = [];
+      let Keywords = [];
+
+      // --- CAROUSEL FUNCTIONS ---
+
+      function updateFormState() {
+        if (filesArray.length > 0) {
+          uploadLabel.classList.add("hidden");
+          carousel.style.display = "block";
+          uploadMoreBtn.style.display = "block";
+          editBtn.style.display = "block";
+          renderCarousel();
+        } else {
+          // Reset if no images
+          uploadLabel.classList.remove("hidden");
+          carousel.style.display = "none";
+          uploadMoreBtn.style.display = "none";
+          editBtn.style.display = "none";
+          fileInput.value = ""; // Clear input
+        }
+      }
+
+      function renderCarousel() {
+        if (filesArray.length === 0) return;
+
+        // Ensure index is valid
+        if (currentIndex >= filesArray.length) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = filesArray.length - 1;
+
+        const file = filesArray[currentIndex];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        imgCounter.textContent = `${currentIndex + 1} / ${filesArray.length}`;
+      }
+
+      // --- EVENT LISTENERS ---
+
+      // 1. File Selection
+      fileInput.addEventListener("change", (e) => {
+        const newFiles = Array.from(e.target.files);
+        if (newFiles.length > 0) {
+          filesArray = [...filesArray, ...newFiles];
+          currentIndex = filesArray.length - 1; // Jump to newest
+          updateFormState();
+        }
+      });
+
+      // 2. Upload More
+      uploadMoreBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // 3. Carousel Navigation
+      prevBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          currentIndex--;
+          renderCarousel();
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          currentIndex++;
+          renderCarousel();
+        }
+      });
+
+      // 4. Delete Image
+      deleteBtn.addEventListener("click", () => {
+        if (filesArray.length > 0) {
+          filesArray.splice(currentIndex, 1);
+          if (filesArray.length === 0) {
+            updateFormState();
+          } else {
+            // Adjust index if we deleted the last item
+            if (currentIndex >= filesArray.length) {
+              currentIndex = filesArray.length - 1;
+            }
+            renderCarousel();
+          }
+        }
+      });
+
+      // --- FORM TOGGLING ---
+      document.getElementById("new_meal").addEventListener("click", () => {
+        document.getElementById("NewCategoryForm").style.display = "block";
+        document.getElementById("new_meal").style.display = "none";
+      });
+
+      document.getElementById("cancel").addEventListener("click", (e) => {
+        e.preventDefault();
+        document.getElementById("NewCategoryForm").style.display = "none";
+        document.getElementById("new_meal").style.display = "block"; // Changed from inline-block for centering
+        document.getElementById("new_meal").style.margin = "0 auto";
+      });
+
+      // --- INGREDIENTS & KEYWORDS LOGIC ---
+      document
+        .getElementById("IngredientsInput")
+        .addEventListener("input", function () {
+          let btn = document.getElementById("IngredientButton");
+          btn.disabled = this.value.trim() === "";
+        });
+
+      document
+        .getElementById("KeywordInput")
+        .addEventListener("input", function () {
+          let btn = document.getElementById("AddKeyword");
+          btn.disabled = this.value.trim() === "";
+        });
+
+      document.getElementById("AddKeyword").addEventListener("click", (e) => {
+        e.preventDefault();
+        let input = document.getElementById("KeywordInput");
+        let word = input.value.trim();
+        if (word !== "") {
+          Keywords.push(word);
+          let li = document.createElement("li");
+          li.textContent = word;
+          document.getElementById("KeyWordsList").appendChild(li);
+          input.value = "";
+          document.getElementById("AddKeyword").disabled = true;
+        }
+      });
+
+      document
+        .getElementById("IngredientButton")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          let input = document.getElementById("IngredientsInput");
+          let ingredient = input.value.trim();
+          if (ingredient !== "") {
+            Ingredients.push(ingredient);
+            let li = document.createElement("li");
+            li.textContent = ingredient;
+            document.getElementById("IngregientsList").appendChild(li);
+            input.value = "";
+            document.getElementById("IngredientButton").disabled = true;
+          }
+        });
+
+      // --- FINAL SUBMISSION ---
+      document.getElementById("FinalCreate").addEventListener("click", (e) => {
+        e.preventDefault();
+        document.getElementById("loading").style.display="block";
+        let MealName = document.getElementById("MealName").value.trim();
+        let Price = document.getElementById("price").value.trim();
+        let from = document.getElementById("from").value.trim();
+        let to = document.getElementById("to").value.trim();
+        let timeWarning = document.getElementById("warning");
+
+        if (from > to) {
+          timeWarning.style.color = "red";
+          timeWarning.innerHTML =
+            "The from time cannot be greater than to Time!";
+          return;
+        }
+
+        if (to > 100) {
+          timeWarning.style.color = "red";
+          timeWarning.innerHTML = "Waiting time is too long";
+          return;
+        }
+
+        if (Ingredients.length < 1) {
+          alert("Ingredients are listed");
+          return;
+        }
+
+        if ((to == "") | (from == "") || Price == "" || MealName == "") {
+          alert("form not fully filled!");
+          return;
+        }
+
+        // Prepare Data
+        let form = document.getElementById("MealForm");
+        let Data = new FormData(form);
+
+        // IMPORTANT: We must manually append the images from our filesArray
+        // because the input[type=file] might only hold the very last selection.
+        // We clear the 'images' key first to avoid duplicates if the browser auto-filled it
+        Data.delete("images");
+
+        filesArray.forEach((file) => {
+          Data.append("images", file);
+        });
+
+        if (Keywords.length !== 0) {
+          Data.append("keywords", JSON.stringify(Keywords));
+        }
+        Data.append("ingredients", JSON.stringify(Ingredients));
+
+        console.log("Submitting...");
+
+        fetch(`http://localhost:4000/upload/meal/${StoreId}/${TheId}`, {
+          method: "post",
+          body: Data,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.Status) {
+              window.location.reload();
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("Error uploading meal");
+          });
+      });
+    </script>
+  </body>
+</html>

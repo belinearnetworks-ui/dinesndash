@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders | DinesNDash</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      let OrderId = <%- JSON.stringify(order_id) -%>;
+      let UserId = <%- JSON.stringify(UserId) -%>;
+      let delivery=<%- JSON.stringify(delivery_fee) %>;
+      let delivery_info=<%- JSON.stringify(delivery_info) -%>;
+    </script>
+    <style>
+      /* --- CSS VARIABLES --- */
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --primary-light: #fff1f2;
+        --secondary: #f59e0b;
+        --success: #10b981;
+        --dark: #111827;
+        --gray: #6b7280;
+        --light-gray: #f9fafb;
+        --white: #ffffff;
+        --border: #e5e7eb;
+        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --radius: 1rem;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        background: #f3f4f6;
+        color: var(--dark);
+        overflow-x: hidden;
+      }
+
+      /* --- LAYOUT --- */
+      .app-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* --- SIDEBAR --- */
+      .sidebar {
+        width: 260px;
+        background: var(--white);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        height: 100vh;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 3rem;
+        color: var(--dark);
+        text-decoration: none;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        color: var(--gray);
+        border-radius: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+
+      .user-profile {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--dark);
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* --- MAIN CONTENT --- */
+      .main-content {
+        flex: 1;
+        margin-left: 260px;
+        padding: 2rem;
+        max-width: 1400px;
+      }
+      .page-header {
+        margin-bottom: 2rem;
+      }
+      .page-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+      }
+      .page-header p {
+        color: var(--gray);
+      }
+
+      /* --- ORDERS GRID --- */
+      .orders-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+      }
+
+      /* --- ORDER CARD --- */
+      .order-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-light);
+      }
+
+      .oc-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        background: rgba(249, 250, 251, 0.5);
+      }
+
+      .meal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+      }
+      .order-id {
+        font-size: 0.75rem;
+        color: var(--gray);
+        font-family: monospace;
+        text-transform: uppercase;
+      }
+      .price-tag {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+
+      .oc-body {
+        padding: 1.5rem;
+        flex: 1;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+      }
+      .label {
+        color: var(--gray);
+        font-weight: 500;
+      }
+      .value {
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      /* --- STATUS & UI COMPONENTS --- */
+      .status-container {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: var(--light-gray);
+        border-radius: 0.75rem;
+        text-align: center;
+      }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+      .status-badge.paid {
+        background: #dbeafe;
+        color: #2563eb;
+      }
+      .status-badge.accepted {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      .status-badge.ready {
+        background: #d1fae5;
+        color: #059669;
+      }
+      .status-badge.pending {
+        background: #f3f4f6;
+        color: var(--gray);
+      }
+
+      .pin-box {
+        border: 2px dashed var(--primary);
+        background: var(--primary-light);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-top: 0.5rem;
+      }
+      .pin-box h1 {
+        font-family: monospace;
+        font-size: 2rem;
+        letter-spacing: 4px;
+        color: var(--primary);
+        margin: 0;
+      }
+      .pin-box p {
+        font-size: 0.7rem;
+        color: var(--gray);
+        margin-top: 0.5rem;
+        line-height: 1.4;
+      }
+
+      /* --- FEEDBACK FORM STYLES --- */
+      .feedback-section {
+        margin-top: 1rem;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+        text-align: left;
+      }
+      .rating-stars {
+        display: flex;
+        gap: 5px;
+        margin: 10px 0;
+        justify-content: center;
+      }
+      .rating-stars i {
+        font-size: 1.5rem;
+        color: #d1d5db;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .rating-stars i.active {
+        color: var(--secondary);
+      }
+
+      .feedback-type {
+        width: 100%;
+        padding: 0.6rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+        outline: none;
+      }
+
+      .feedback-text {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        font-size: 0.85rem;
+        resize: none;
+        margin-bottom: 0.5rem;
+      }
+
+      /* --- BUTTONS --- */
+      .btn {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: 0.2s;
+        margin-top: 0.5rem;
+        display: inline-block;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--dark);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary);
+      }
+      .btn-outline {
+        border: 2px solid var(--border);
+        color: var(--dark);
+        background: white;
+      }
+      .btn-outline:hover {
+        border-color: var(--dark);
+        background: var(--light-gray);
+      }
+      /* --- CART DRAWER --- */
+      .cart-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 90;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+      }
+      .cart-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .cart-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 400px;
+        background: var(--white);
+        z-index: 100;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+      }
+      .cart-drawer.open {
+        transform: translateX(0);
+      }
+      .cart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .cart-items {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding-right: 0.5rem; /* Space for scrollbar */
+      }
+
+      /* Scrollbar styling for cart */
+      .cart-items::-webkit-scrollbar {
+        width: 6px;
+      }
+      .cart-items::-webkit-scrollbar-thumb {
+        background-color: #e5e7eb;
+        border-radius: 10px;
+      }
+      .cart-item {
+        display: flex;
+        gap: 1rem;
+      }
+      .cart-item img {
+        width: 70px;
+        height: 70px;
+        border-radius: 0.75rem;
+        object-fit: cover;
+      }
+      .cart-item-details {
+        flex: 1;
+      }
+      .cart-item-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+      }
+      .cart-item-price {
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+      .qty-btn {
+        background: var(--light-gray);
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        line-height: 0;
+        transition: 0.2s;
+      }
+
+      .qty-btn:hover {
+        background: #e5e7eb;
+      }
+      .cart-footer {
+        margin-top: 2rem;
+        border-top: 1px solid var(--border);
+        padding-top: 1.5rem;
+      }
+      .cart-total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+      .cart-total-row.final {
+        color: var(--dark);
+        font-weight: 800;
+        font-size: 1.25rem;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .checkout-btn {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: 0.2s;
+      }
+      .checkout-btn:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+      }
+      .empty-cart-msg {
+        text-align: center;
+        color: var(--gray);
+        margin-top: 4rem;
+        font-style: italic;
+      }
+      /* --- MOBILE --- */
+      .mobile-toggle {
+        display: none;
+      }
+      /* SIDEBAR SYSTEM */
+  .chat-sidebar {
+    position: fixed; top: 0; right: -100%; width: 400px; max-width: 85%; height: 100%;
+    background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000;
+  }
+  .chat-sidebar.open { right: 0; }
+  .sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); display: none; z-index: 1500; backdrop-filter: blur(4px);
+  }
+  .sidebar-overlay.active { display: block; }
+
+  .chat-header {
+    padding: 20px; background: #e11d48; color: white;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .chat-messages {
+    flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .user { align-self: flex-end; background: #e11d48; color: white; border-radius: 18px 18px 2px 18px; padding: 12px 16px; }
+  .driver { align-self: flex-start; background: white; color: #1e293b; border-radius: 18px 18px 18px 2px; padding: 12px 16px; border: 1px solid #e2e8f0; }
+
+  /* Floating Chat Button */
+  #openChat {
+    z-index: 1000;
+    position: absolute; top: -30px; right: 20px;
+    padding: 12px 24px; background: #e11d48; color: white;
+    border: none; border-radius: 50px; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+    display: flex; align-items: center; gap: 10px; font-weight: 600;
+  }
+
+  /* Trip Cards for Google Route Results */
+  .trip-card {
+    border-left: 4px solid #e11d48; padding: 12px; background: #fff1f2;
+    border-radius: 8px; font-size: 0.9rem;
+  }
+  /* Pulse animation for 'Driver is coming' */
+  .pulse-delivery {
+    animation: pulse-red 2s infinite;
+    border-radius: 50%;
+  }
+  /* Arrived State Pulse */
+.arrived-alert {
+  background: #fff1f2;
+  border: 2px solid var(--primary);
+  animation: border-flash 1.5s infinite;
+}
+
+@keyframes border-flash {
+  0% { border-color: var(--primary); }
+  50% { border-color: transparent; }
+  100% { border-color: var(--primary); }
+}
+
+#countdown {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+
+  @keyframes pulse-red {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+  }
+
+  /* Star Rating Hover Effects */
+  .rating-stars i:hover,
+  .rating-stars i:hover ~ i {
+    color: #f59e0b !important;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      display: none;
+    }
+    .main-content {
+      margin-left: 0;
+      padding: 1rem;
+    }
+  }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <a href="/home" class="logo">
+          <i class="fas fa-utensils" style="color: var(--primary)"></i>
+          <span>Dines<span style="color: var(--primary)">N</span>Dash</span>
+        </a>
+        <nav>
+          <a href="/home" class="nav-item"
+            ><i class="fas fa-th-large"></i> Dashboard</a
+          >
+          <a href="#" class="nav-item"
+            ><i class="fas fa-heart"></i> Favorites</a
+          >
+          <a href="#" class="nav-item active"
+            ><i class="fas fa-clock"></i> Orders</a
+          >
+          <a href="#" class="nav-item"><i class="fas fa-wallet"></i> Wallet</a>
+          <a href="#" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+        <div class="user-profile">
+          <div class="avatar"><img src="images/avatar.jpg" alt="User" /></div>
+          <div>
+            <div style="font-weight: 700; font-size: 0.9rem">
+              <%= user.fullname %>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <div class="page-header">
+          <h1>Order History</h1>
+          <p>Track your current meals and past delights.</p>
+        </div>
+
+        <div class="orders-container">
+          <% Orders.forEach(order => { %>
+          <div class="order-card">
+            <div class="oc-header">
+              <div>
+                <h2 class="meal-title"><%= order.meal_name %></h2>
+                <span class="order-id">#<%= order.id %></span>
+              </div>
+              <div class="price-tag">R<%= order.amount %></div>
+            </div>
+
+            <div class="oc-body">
+              <div class="info-row">
+                <span class="label">Quantity</span>
+                <span class="value">x<%= order.quantity %></span>
+              </div>
+
+              <% if(order.payment_status == "COMPLETE") { %>
+              <div class="info-row">
+                <span class="label">Subtotal</span>
+                <span class="value">R<%= order.subtotal %></span>
+              </div>
+
+              <div class="status-container">
+                <% if(order.order_status == "PAID") { %>
+                <div class="status-badge paid">
+                  <i class="fas fa-receipt"></i> Paid • Waiting for Store
+                </div>
+                <div class="pin-box">
+                  <h1><%= order.user_code %></h1>
+                  <p>
+                    🔒 Keep this code safe! You will need it to collect your
+                    meal.
+                  </p>
+                </div>
+
+                <% } else if(order.order_status == "ACCEPTED") { %>
+                <div class="status-badge accepted">
+                  <i class="fas fa-fire"></i> Preparing
+                </div>
+                <p style="font-size: 0.9rem; margin-bottom: 1rem">
+                  Estimated time:
+                  <strong
+                    ><%= order.TimeFrom %> - <%= order.TimeTo %> mins</strong
+                  >
+                </p>
+                <div class="pin-box">
+                  <h1><%= order.user_code %></h1>
+
+                  <p>Show this code when collecting.</p>
+                </div>
+
+                <% } else if(order.order_status == "READY") { %>
+                <div class="status-badge ready">
+                  <i class="fas fa-check-circle"></i> Ready for Collection
+                </div>
+                <div
+                  class="pin-box"
+                  style="border-color: var(--success); background: #ecfdf5"
+                >
+                  <h1 style="color: var(--success)"><%= order.user_code %></h1>
+                  <p>Show this code to the driver when they arrive</p>
+                </div>
+
+                 
+                <% }else if(order.order_status == "COLLECTED_BY_DRIVER") { %>
+                <div class="status-container" style="border: 2px solid var(--primary);">
+    <div class="pulse-delivery" style="width: 60px; height: 60px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+      <i class="fas fa-motorcycle" style="color: var(--primary); font-size: 1.5rem;"></i>
+    </div>
+    <h2 style="font-size: 1.1rem; color: var(--dark)">Our Driver is on the way!</h2>
+    <p><b>Estimated Arrival:</b> <span id="estimated" class="value" style="color: var(--primary)">Calculating...</span></p>
+    
+    <div class="pin-box">
+      <h1 style="font-size: 2.5rem;"><%= order.user_code %></h1>
+      <p>Give this code to the driver to receive your meal.</p>
+    </div>
+                  <% } else if(order.order_status == "ARRIVED") { %>
+    <div class="status-container arrived-alert">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚚</div>
+        <h2 style="color: var(--primary); font-weight: 800;">The Driver is Outside!</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 1rem;">Please meet the driver at the door.</p>
+        
+        <div class="pin-box" style="background: var(--white);">
+            <h1 style="font-size: 3rem; margin: 0;"><%= order.user_code %></h1>
+            <p style="font-weight: 700; color: var(--dark);">SHARE THIS PIN TO COLLECT</p>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
+            <p style="font-size: 0.85rem; color: var(--gray);">
+                <i class="fa-regular fa-clock"></i> 
+                <b>Waiting time remaining:</b> 
+                <span id="countdown-<%= order.id %>">05:00</span>
+            </p>
+        </div>
+    </div>
+<% }else if(order.order_status == "DELIVERED") { %>
+                <div
+                  class="status-badge"
+                  style="background: var(--dark); color: white"
+                >
+                  <i class="fas fa-utensils"></i> Enjoy your meal
+                </div>
+                <% if(order.feedback_status=="no"){%>
+
+                <div class="feedback-section">
+                  <p
+                    style="
+                      font-size: 0.85rem;
+                      font-weight: 600;
+                      text-align: center;
+                    "
+                  >
+                    How was your experience?
+                  </p>
+
+                  <% if(order.rated=="no"){%>
+                  <div class="rating-stars" data-order-id="<%= order.id %>">
+                    <i
+                      class="fas fa-star rate"
+                      data-value="1"
+                      data-mealid="<%= order.meal_id %>"
+                    ></i>
+                    <i
+                      class="fas fa-star rate"
+                      data-value="2"
+                      data-mealid="<%= order.meal_id %>"
+                    ></i>
+                    <i
+                      class="fas fa-star rate"
+                      data-value="3"
+                      data-mealid="<%= order.meal_id %>"
+                    ></i>
+                    <i
+                      class="fas fa-star rate"
+                      data-value="4"
+                      data-mealid="<%= order.meal_id %>"
+                    ></i>
+                    <i
+                      class="fas fa-star rate"
+                      data-value="5"
+                      data-mealid="<%= order.meal_id %>"
+                    ></i>
+                  </div>
+                  <%} %>
+
+                  <select class="feedback-type">
+                    <option value="">Select...</option>
+                    <option value="feedback">General Feedback</option>
+                    <option value="suggestion">Suggestion</option>
+                    <option value="report">Report an Issue</option>
+                  </select>
+
+                  <textarea
+                    class="feedback-text"
+                    placeholder="Write a quick note..."
+                    rows="4"
+                  ></textarea>
+
+                  <h5>Word Count: <span class="word-count">0</span>/250</h5>
+                  <br />
+                  <p class="error-msg" style="color: red"></p>
+
+                  <button
+                    class="btn btn-primary submit-feedback"
+                    data-meal-id="<%= order.meal_id %>"
+                    data-order-id="<%= order.id %>"
+                  >
+                    Submit Review
+                  </button>
+                </div>
+                <%} %> <% } else if(order.order_status == "CANCELED") { %>
+                <div
+                  class="status-badge"
+                  style="background: #fee2e2; color: #b91c1c"
+                >
+                  <i class="fas fa-times-circle"></i> Canceled
+                </div>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem">
+                  Don't stay hungry.
+                </p>
+                <button class="btn btn-primary">Try Again</button>
+                <% } %>
+              </div>
+
+              <% } else if(order.payment_status == "PENDING") { %>
+              <div
+                class="status-container"
+                style="background: white; padding: 0"
+              >
+                <div class="status-badge pending">
+                  <i class="fas fa-hourglass-half"></i> Payment Pending
+                </div>
+                <p
+                  style="
+                    color: var(--gray);
+                    font-size: 0.9rem;
+                    margin-bottom: 1rem;
+                  "
+                >
+                  Complete checkout to start your order.
+                </p>
+                <button class="btn btn-primary">Continue to Checkout</button>
+              </div>
+              <% } %>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+        <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+        <a href="javascript:void(0)" class="nav-item" onclick="toggleCart()">
+          <i class="fas fa-shopping-cart"></i> Cart
+          <span
+            id="cart-badge"
+            style="
+              background: var(--primary);
+              color: white;
+              border-radius: 50%;
+              padding: 2px 6px;
+              font-size: 0.7rem;
+            "
+            >0</span
+          >
+        </a>
+
+        <div class="cart-drawer" id="cartDrawer">
+          <div class="cart-header">
+            <h2 style="font-size: 1.5rem">Your Cart</h2>
+            <button onclick="toggleCart()">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="M18 6L6 18" />
+                <path d="M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="cart-items" id="cartItems">
+            <div class="empty-cart-msg">
+              Your cart is empty. <br />Start adding some yummy food!
+            </div>
+          </div>
+          <div id="Promo"></div>
+
+          <div class="cart-footer" id="cart-footer">
+            <div class="cart-total-row">
+              <span>Subtotal</span>
+              <span id="cartSubtotal">R0.00</span>
+            </div>
+            <div class="cart-total-row"></div>
+            <div class="cart-total-row final">
+              <span>Total</span>
+              <span id="cartTotal">R20.00</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn">Checkout</button>
+          </div>
+        </div>
+        <button id="openChat"><i class="fa-regular fa-message"></i> Chat with driver</button>
+       <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <div id="chatSidebar" class="chat-sidebar">
+      <div class="chat-header">
+        <button id="closeChat" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer;">&times;</button>
+      </div>
+
+  <div id="messageContainer" class="chat-messages">
+    <% if(chats.length == 0){ %>
+      <div id="no-chat" style="text-align:center; color:#94a3b8; margin-top:20px;">No messages yet.</div>
+    <% } else { %>
+      <% chats.forEach(chat => { %>
+        <p class="<%= chat.message_by %>"><%= chat.chat_value %></p>
+      <% }) %>
+    <% } %>
+  </div>
+  <div class="chat-input-area" style="padding: 15px; border-top: 1px solid #e2e8f0;">
+    <textarea id="chatInput" style="width:100%; border-radius:8px; padding:10px; border:1px solid #cbd5e1; resize:none;" placeholder="Type a message..."></textarea>
+    <button id="sendChat" orderId="" style="width:100%; background:#e11d48; color:white; border:none; padding:12px; border-radius:8px; margin-top:8px; font-weight:600;" disabled>Send Message</button>
+  </div>
+</div>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/userchat.js"></script>
+  </body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Completed | FleetDriver</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+        :root {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --dark: #0f172a;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --white: #ffffff;
+            --sidebar-width: 260px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --success: #10b981;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background-color: var(--gray-50);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-links { list-style: none; padding: 0; margin: 0; }
+        .nav-links li { margin-bottom: 0.5rem; }
+        .nav-links a {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.85rem 1rem; color: #94a3b8; text-decoration: none;
+            border-radius: 0.75rem; font-weight: 600; transition: 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255, 255, 255, 0.1); color: white; }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 800px;
+        }
+
+        .success-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        /* --- ORDER SUMMARY CARD --- */
+        .summary-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .summary-item label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-item span {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .earnings-text { color: var(--success); font-size: 1.5rem !important; }
+
+        /* --- FEEDBACK FORM --- */
+        .feedback-section {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .feedback-group {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .feedback-group:last-child { border-bottom: none; }
+
+        .feedback-group h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .feedback-group p {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .rating-value {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.25rem;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1); }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        @media (max-width: 900px) {
+            .sidebar { width: 80px; }
+            .sidebar span, .brand span { display: none; }
+            main { margin-left: 80px; padding: 1.5rem; }
+            .summary-card { grid-template-columns: 1fr; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand"><i class="fa-solid fa-truck-fast" style="color: var(--primary)"></i> <span>FleetDriver</span></div>
+        <ul class="nav-links">
+            <li><a href="/home/driver"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a></li>
+            <li><a href="/driver/orders"><i class="fa-solid fa-box"></i> <span>Available Orders</span></a></li>
+            <li><a href="/driver/history" class="active"><i class="fa-solid fa-clock-rotate-left"></i> <span>My History</span></a></li>
+            <li><a href="/driver/wallet"><i class="fa-solid fa-wallet"></i> <span>Earnings</span></a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <div class="success-header">
+            <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <h1>Order Delivered Successfully!</h1>
+            <h2>Great job. Your earnings have been added to your wallet.</h2>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-item">
+                <label>Customer</label>
+                <span><%= order_info.fullname %></span>
+            </div>
+            <div class="summary-item">
+                <label>Completion Date</label>
+                <span><%= order_info.accepted_At %></span>
+            </div>
+            <div class="summary-item">
+                <label>Total Earnings</label>
+                <span class="earnings-text">R <%= order_info.Earnings %></span>
+            </div>
+        </div>
+
+        <% if(!stats) { %>
+        <div class="feedback-section">
+            <h2 style="margin-top:0">Delivery Feedback</h2>
+            <p style="color:var(--gray-600); font-size: 0.9rem; margin-bottom: 2rem;">Your feedback helps us optimize routes and improve the platform experience.</p>
+            
+            <form action="/driver_feedback/<%= order_info.order_id %>" method="post">
+                
+                <div class="feedback-group">
+                    <h3><i class="fa-solid fa-map-location-dot"></i> Navigation Quality</h3>
+                    <p>How accurate and helpful was the Google Maps route for this delivery?</p>
+                    <div class="rating-container">
+                        <input type="range" name="map_rating" id="map_range" min="0" max="5" step="1" value="0">
+                        <div class="rating-value"><span id="map_val">0</span> / 5</div>
+                    </div>
+                    <textarea name="feedback" placeholder="Any issues with the route? (e.g., closed roads, wrong entrance)"></textarea>
+                </div>
+
+                <div class="feedback-group">
+                    <h3><i class="fa-solid fa-user-check"></i> Interaction with <%= order_info.fullname %></h3>
+                    <p>How would you rate your experience with the customer during the hand-off?</p>
+                    <div class="rating-container">
+                        <input type="range" name="user_rating" id="user_range" min="0" max="5" step="1" value="0">
+                        <div class="rating-value"><span id="user_val">0</span> / 5</div>
+                    </div>
+                    <textarea name="user_feedback" placeholder="Describe your experience with the customer..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit Feedback & Finish</button>
+            </form>
+        </div>
+        <% } %>
+    </main>
+
+    <script>
+        // Real-time rating update logic
+        const mapRange = document.getElementById('map_range');
+        const mapVal = document.getElementById('map_val');
+        const userRange = document.getElementById('user_range');
+        const userVal = document.getElementById('user_val');
+
+        mapRange.addEventListener('input', (e) => {
+            mapVal.textContent = e.target.value;
+        });
+
+        userRange.addEventListener('input', (e) => {
+            userVal.textContent = e.target.value;
+        });
+    </script>
+</body>
+</html>

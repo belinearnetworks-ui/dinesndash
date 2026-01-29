@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customers For <%= Name %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #e11d48;
+        --primary-hover: #be123c;
+        --dark: #0f172a;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-600: #475569;
+        --white: #ffffff;
+        --sidebar-width: 260px;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--gray-50);
+        color: var(--dark);
+        margin: 0;
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* --- SIDEBAR --- */
+      .sidebar {
+        width: var(--sidebar-width);
+        background: var(--dark);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+      }
+
+      .brand {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .nav-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .nav-links li { margin-bottom: 0.5rem; }
+
+      .nav-links a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        color: #94a3b8;
+        text-decoration: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+
+      .nav-links a:hover, .nav-links a.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      .nav-links a.active { border-left: 4px solid var(--primary); }
+
+      /* --- MAIN CONTENT --- */
+      main {
+        margin-left: var(--sidebar-width);
+        flex: 1;
+        padding: 2.5rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      h1 { font-size: 1.75rem; font-weight: 800; margin: 0; }
+
+      /* --- CONTROLS --- */
+      .filter-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow);
+      }
+
+      label { font-size: 0.85rem; font-weight: 700; color: var(--gray-600); }
+
+      select {
+        border: none;
+        background: none;
+        font-family: inherit;
+        font-weight: 700;
+        color: var(--primary);
+        cursor: pointer;
+        outline: none;
+      }
+
+      /* --- TABLE --- */
+      .table-card {
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+      }
+
+      th {
+        background: var(--gray-50);
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--gray-600);
+        font-weight: 800;
+        letter-spacing: 0.05em;
+      }
+
+      td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-100);
+        font-size: 0.95rem;
+      }
+
+      tr:hover td { background-color: #fff9fa; }
+
+      .pos-badge {
+        background: var(--gray-100);
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.4rem;
+        font-weight: 800;
+        font-size: 0.8rem;
+      }
+
+      .customer-name { font-weight: 700; color: var(--dark); }
+      .spent-amount { font-weight: 800; color: var(--primary); }
+
+      @media (max-width: 900px) {
+        .sidebar { width: 80px; padding: 1rem; }
+        .sidebar .brand span, .nav-links span { display: none; }
+        main { margin-left: 80px; }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand"><i class="fa-solid fa-store" style="color: var(--primary)"></i> <span><%= Name %></span></div>
+      <ul class="nav-links">
+        <li><a href="/home"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>
+        <li><a href="/all/products"><i class="fa-solid fa-box-open"></i> <span>Products</span></a></li>
+          <a href="/categories" ><i class="fa-solid fa-list"></i> Categories</a>
+
+        <li><a href="/full/store/orders"><i class="fa-solid fa-cart-shopping"></i> <span>Orders</span></a></li>
+        <li><a href="#" class="active"><i class="fa-solid fa-users"></i> <span>Customers</span></a></li>
+        <li><a href="/wallet/for/store/<%= store_id %>"><i class="fa-solid fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href=""><i class="fa-solid fa-arrow-trend-up"></i> Promote Product</a></li>
+
+      </ul>
+      <div style="margin-top: auto">
+        <ul class="nav-links">
+          <li><a href="#"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+          <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <h1>Customer Insights</h1>
+        <div class="filter-container">
+          <label><i class="fa-solid fa-filter"></i> Sort By:</label>
+          <select id="filter-by">
+            <option value="Total">Total Spent (Highest)</option>
+            <option value="Orders">Order Count (Most)</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px">Pos.</th>
+              <th>Customer Name</th>
+              <th>Successful Orders</th>
+              <th>Total Spent (Gross)</th>
+            </tr>
+          </thead>
+          <tbody id="customer-list">
+              </tbody>
+        </table>
+      </div>
+    </main>
+
+    <script>
+      // Mock data if script is rendered on client
+      let Customers = <%- JSON.stringify(customers) -%>;
+      const tbody = document.getElementById("customer-list");
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initial sort: Total Spent Descending
+        Customers.sort((a, b) => b.total_spent - a.total_spent);
+        render(Customers);
+      });
+
+      function render(data) {
+        tbody.innerHTML = ""; // Clear current list
+        
+        data.forEach((customer, index) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td><span class="pos-badge">#${index + 1}</span></td>
+            <td><span class="customer-name">${customer.fullname}</span></td>
+            <td>${customer.successful_orders} orders</td>
+            <td><span class="spent-amount">R${customer.total_spent}</span></td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      }
+
+      document.getElementById("filter-by").addEventListener("change", (e) => {
+        const Value = e.target.value;
+        if (Value === "Total") {
+          Customers.sort((a, b) => b.total_spent - a.total_spent);
+        } else {
+          Customers.sort((a, b) => b.successful_orders - a.successful_orders);
+        }
+        render(Customers);
+      });
+    </script>
+  </body>
+</html>

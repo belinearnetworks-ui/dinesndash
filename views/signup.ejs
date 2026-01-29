@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DinesNDash - Authentication</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="shortcut icon" href="/logo_1.png" type="image/x-icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+ 
+</head>
+<body>
+    <div class="loading" id="loading">
+      <div class="loader">
+        <div class="circle"></div>
+        <div class="icons">🍴</div>
+        <h3 style="color: white">Loading...</h3>
+      </div>
+    </div>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <!-- <img src="\image.png" alt="dnd logo" height="80px" width="80px" > -->
+                 <img src="/logo_2.png" height="200px" width="200px" alt="">
+                
+                <p>Fast food ordering made simple</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="tab-list">
+                    <button class="tab-trigger active" data-tab="login">Sign In</button>
+                    <button class="tab-trigger" data-tab="signup">Sign Up</button>
+                </div>
+                <h2 id="error" style="color: red;"></h2>
+
+                
+                <div class="tab-content active" id="login">
+                    <form id="login-form" action="/login" method="post">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="username" name="username" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="password-input">
+                                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                                <button type="button" class="toggle-password">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                                <a href="/forgot-password">Forgot Password?</a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>I am a:</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="userType" value="customer" checked>
+                                    <span>Customer</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="userType" value="shop">
+                                    <span>Shop Owner</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- <button type="submit" id="SignIn">Sign In</button> -->
+                         <input type="submit" value="Sign In">
+                    </form>
+                </div>
+
+                <div id="signup" class="tab-content">
+                    <form id="UserSignupForm">
+                        <div class="form-group">
+                            <label for="user-signup-name">Full Name</label>
+                            <input type="text" id="user_signup_name" name="user_signup_name" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-signup-email">Email</label>
+                            <input type="email" id="UserSignupEmail" name="UserSignupEmail" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="allerge">Any Allergies/Intollerencies?(Optional)</label>
+                            <input type="text" id="allergy" value="None"/><button id="AddAllergy" disabled>Add</button>
+                            <ul id="allergies"></ul>
+                        </div>
+                        <div class="form-group">
+                            <label for="UserSignUpPassword">Password</label>
+                            <input type="password" id="UserSignUpPassword" name="UserSignUpPassword" placeholder="Create a password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="UserConfirmPassword">Confirm Password</label>
+                            <input type="password" id="UserConfirmPassword" name="UserConfirmPassword" placeholder="Confirm your password" required>
+                            <p id="warningone" style="color: red;"></p>
+                        </div>
+                        <button type="submit" class="btn-primary" usertype="user">Sign Up</button>
+                    </form>
+                    
+                    <!-- New SignUp Form -->
+                           <form id="store-signup-form" enctype="multipart/form-data" style="display: none;">
+                        <div class="form-group">
+                            <label for="signup-name">Store Name</label>
+                            <input type="text" id="store_name" name="store_name" placeholder="Enter Store Name..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="store-id">Store Registration ID</label>
+                            <input type="text" placeholder="Store registration ID..." id="store-id" name="store-id" required>
+                        </div>
+                        <fieldset>
+                            <legend>Trading Hours</legend>
+                            <select name="dayType" id="dayType">
+                                <option value="">Select</option>
+                                <option value="Mon-Fri" id="Mon-Fri">Mon-Fri</option>
+                                <option value="Saturdays" id="Saturdays">Saturdays</option>
+                                <option value="Sundays" id="Sundays">Sundays</option>
+                                <option value="PublicHolidays" id="PublicHolidays">Public Holidays</option>
+                            </select>
+                            <br>
+                            <label for="OpeningTime">Opening Time</label><br>
+                            <input type="time" name="OpeningTime" id="OpeningTime"><br>
+                            <label for="ClosingTime">Closing Time</label><br>
+                            <input type="time" name="ClosingTime" id="ClosingTime"><br>
+                            <label for="closed">Closed</label><br>
+                            <input type="radio" name="closed" id="closed" value="closed"><br>
+                            <h3 id="StoreTimesError" style="color: red;"></h3>
+                            <button onclick="AddTime(event)" id="Add-Btn">Add</button>
+                            <div id="NewAdded">
+                                <ul id="TimesList"></ul>
+                            </div>
+                        </fieldset>
+                        <div class="form-group">
+                            <label for="">Store Logo(optional)</label>
+                            <label for="Logo">Drag & Drop</label>
+                            <input type="file" name="Logo" id="Logo" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label for="store-signup-email">Email</label>
+                            <input type="email" id="store_signup_email" name="store_signup_email" placeholder="Enter your email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <input type="password" id="store_signup_password" name="store_signup_password" placeholder="Create a password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="store_confirm_password" name="store_confirm_password" placeholder="Confirm your password" required><br>
+                            <p id="warningtwo"></p>
+                        </div>
+                        <button type="submit" class="btn-primary" usertype="store">Register</button>
+                    </form> 
+                     <div class="form-group">
+                            <label>I am a:</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="signupUserType" value="customer" checked>
+                                    <span>Customer</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="signupUserType" value="shop">
+                                    <span>Shop Owner</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/auth.js"></script>
+</body>
+</html>

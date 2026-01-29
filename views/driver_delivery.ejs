@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route & Real-time Chat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    const orderId = <%- JSON.stringify(order.order_id) %>;
+    let delivery=<%- JSON.stringify(Data) -%>;
+  </script>
+<style>
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --primary: #e11d48;
+    --primary-dark: #be123c;
+    --primary-light: #fecdd3;
+    --dark: #0f172a;
+    --light: #f8fafc;
+    --gray: #64748b;
+    --gray-light: #e2e8f0;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --sidebar-width: 280px;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ===== GLOBAL RESET & TYPOGRAPHY ===== */
+  *, *::before, *::after { box-sizing: border-box; }
+  
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  padding: 0; 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+  overflow: auto; /* Changed from hidden to auto */
+  background: #f1f5f9; 
+}
+
+.main-container {
+  display: flex;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  /* No overflow-y here if body handles it */
+}
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #map { 
+    height: 65vh; 
+    width: 100%;
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  /* ===== INFO PANEL ===== */
+  #info { 
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto; 
+    background: white;
+    position: relative;
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px;
+  }
+
+  /* ===== STATUS AND ORDER CARDS ===== */
+  .status-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  .status-badge { 
+    background: #dcfce7; 
+    color: #166534; 
+    padding: 8px 16px; 
+    border-radius: 20px; 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .order-card {
+    background: linear-gradient(135deg, var(--dark), #1e293b);
+    color: white; 
+    padding: 24px; 
+    border-radius: var(--border-radius);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+  }
+
+  .order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .order-card p { 
+    margin: 0; 
+    font-size: 0.9rem; 
+    opacity: 0.9; 
+  }
+
+  .order-card h2 { 
+    margin: 0; 
+    font-family: 'SF Mono', 'Courier New', monospace; 
+    font-size: 1.8rem;
+    letter-spacing: 3px; 
+    color: #fbbf24; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  /* ===== ACTION BUTTONS ===== */
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: var(--gray-light);
+    color: var(--dark);
+  }
+
+  .btn-secondary:hover {
+    background: #cbd5e1;
+  }
+
+  /* ===== ADDRESS SECTION ===== */
+  .address {
+    background: white;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+  }
+
+  .address h2 {
+    color: var(--dark);
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--light);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  thead {
+    background: var(--dark);
+    color: white;
+  }
+
+  th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  /* ===== CHAT BUTTON ===== */
+  #openChat {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    padding: 14px 28px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    z-index: 100;
+    transition: var(--transition);
+  }
+
+  #openChat:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.5);
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--dark);
+    color: white;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .nav-links { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+    flex: 1;
+  }
+
+  .nav-links li { 
+    margin-bottom: 0.5rem; 
+  }
+
+  .nav-links a {
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem;
+    padding: 1rem 1.25rem; 
+    color: #94a3b8; 
+    text-decoration: none;
+    border-radius: 0.75rem; 
+    font-weight: 600; 
+    transition: var(--transition);
+  }
+
+  .nav-links a:hover, 
+  .nav-links a.active { 
+    background: rgba(255, 255, 255, 0.1); 
+    color: white; 
+  }
+
+  .nav-links a.active { 
+    border-left: 4px solid var(--primary);
+    background: rgba(225, 29, 72, 0.1);
+  }
+
+  /* ===== CHAT SIDEBAR ===== */
+  .chat-sidebar {
+    position: fixed; 
+    top: 0; 
+    right: -450px; 
+    width: 400px; 
+    max-width: 85%; 
+    height: 100%;
+    background: white; 
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    display: flex; 
+    flex-direction: column; 
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 2000;
+  }
+
+  .chat-sidebar.open { 
+    right: 0; 
+  }
+
+  .sidebar-overlay {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6); 
+    display: none; 
+    z-index: 1500; 
+    backdrop-filter: blur(4px);
+  }
+
+  .sidebar-overlay.active { 
+    display: block; 
+  }
+
+  .chat-header {
+    padding: 20px 24px; 
+    background: var(--primary);
+    color: white;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+  }
+
+  .chat-messages {
+    flex: 1; 
+    padding: 20px; 
+    overflow-y: auto; 
+    background: #f8fafc;
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px;
+  }
+
+  .message {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .me { 
+    align-self: flex-end; 
+    background: var(--primary); 
+    color: white; 
+    border-radius: 18px 18px 2px 18px; 
+  }
+
+  .them { 
+    align-self: flex-start; 
+    background: white; 
+    color: var(--dark); 
+    border-radius: 18px 18px 18px 2px; 
+    border: 1px solid var(--gray-light); 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  /* ===== CHAT INPUT ===== */
+  .chat-input-area {
+    padding: 16px 20px; 
+    border-top: 1px solid var(--gray-light);
+    background: white;
+  }
+
+  #chatInput {
+    width: 100%; 
+    border-radius: 8px; 
+    padding: 12px 16px; 
+    border: 1px solid var(--gray-light); 
+    resize: none; 
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition);
+  }
+
+  #chatInput:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  #sendChat {
+    width: 100%; 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 8px; 
+    margin-top: 12px; 
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  #sendChat:hover:not(:disabled) {
+    background: var(--primary-dark);
+  }
+
+  #sendChat:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ===== MODAL OVERLAY ===== */
+  #overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #deliveryForm {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  #deliveryForm h2 {
+    margin-top: 0;
+    color: var(--dark);
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  #deliveryForm small {
+    display: block;
+    color: var(--gray);
+    margin-bottom: 1.5rem;
+  }
+
+  #deliveryForm label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    color: var(--dark);
+  }
+
+  #deliveryForm input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: var(--transition);
+  }
+
+  #deliveryForm input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  #SubmitDelivery {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--success);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  #SubmitDelivery:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ===== RESPONSIVE DESIGN ===== */
+  @media (max-width: 1024px) {
+    .sidebar {
+      width: 260px;
+    }
+    .main-container {
+      margin-left: 260px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    .sidebar.open {
+      transform: translateX(0);
+    }
+    .main-container {
+      margin-left: 0;
+    }
+    .chat-sidebar {
+      width: 100%;
+      right: -100%;
+    }
+    .address {
+      margin: 16px;
+    }
+    table {
+      display: block;
+      overflow-x: auto;
+    }
+  }
+
+  /* ===== UTILITY CLASSES ===== */
+  .text-sm { font-size: 0.875rem; }
+  .text-gray { color: var(--gray); }
+  .font-mono { font-family: 'Courier New', monospace; }
+  .shadow { box-shadow: var(--box-shadow); }
+</style>
+</head>
+<body>
+  <div id="overlay"></div>
+
+  <aside class="sidebar">
+    <div class="brand"><i class="fa-solid fa-truck-fast" style="color: var(--primary)"></i> <span>FleetDriver</span></div>
+    <ul class="nav-links">
+      <li><a href="/home/driver"><i class="fa-solid fa-chart-pie"></i> <span>Overview</span></a></li>
+      <li><a href="/driver/orders" class="active"><i class="fa-solid fa-box"></i> <span>Available Orders</span></a></li>
+      <li><a href="/driver/history"><i class="fa-solid fa-clock-rotate-left"></i> <span>My History</span></a></li>
+      <li><a href="/driver/wallet"><i class="fa-solid fa-wallet"></i> <span>Earnings</span></a></li>
+    </ul>
+  </aside>
+
+  <div class="main-container">
+    <div class="content-area">
+      <div id="map"></div>
+      
+      <div id="info">
+        <button id="openChat">
+          <i class="fa-solid fa-comment-dots"></i> Chat with <%= order.fullname %>
+        </button>
+
+        <div class="status-header">
+          <div>
+            <h2 style="margin:0; color: var(--dark);">Delivery Status</h2>
+            <p class="text-sm text-gray">Order #<%= order.order_id %></p>
+          </div>
+          <div class="action-buttons">
+            <% if(order.delivery_status == "FETCHED"){%>
+              <span class="status-badge">Delivering</span>
+              <button id="arrived" class="btn btn-primary">Arrived</button>
+            <%} else if(order.delivery_status=="ARRIVED"){%>
+              <button id="collected" class="btn btn-primary">Collected</button>
+            <%} else if(order.delivery_status == "FETCHING_ORDER"){%>
+              <span class="status-badge" style="background:#fef3c7; color:#92400e;">Collecting Order</span>
+            <%} else if(order.delivery_status == "DELIVERED"){%>
+              <span class="status-badge" style="background:#d1fae5; color:#065f46;">Delivered</span>
+              <a href="/maps/driver/feedback" class="btn btn-secondary">Give Feedback</a>
+            <%} %>
+          </div>
+        </div>
+
+        <div class="order-card">
+          <div>
+            <p>Store Collection Code</p>
+            <small style="color: #cbd5e1;">Show this to the merchant</small>
+          </div>
+          <h2><%= order_code %></h2>
+        </div>
+
+        <div id="route-details">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <i class="fa-solid fa-route" style="color: var(--primary);"></i>
+            <h3 style="margin:0; color: var(--dark);">Route Details</h3>
+          </div>
+          <p class="text-gray">Calculating fastest route...</p>
+        </div>
+
+        <div class="address">
+          <h2>Delivery Address</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>City/Town</th>
+                <th>Ext.</th>
+                <th>Stand No.</th>
+                <th>Additional Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="town">Thuli Fakude</td>
+                <td id="ext">19</td>
+                <td id="stand">7655</td>
+                <td id="extra">Red House front opposite Ekuruleni Tavern.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+  <div id="chatSidebar" class="chat-sidebar">
+    <div class="chat-header">
+      <h3 style="margin:0; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-circle-user"></i> <%= order.fullname %>
+      </h3>
+      <button id="closeChat" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    <div id="messageContainer" class="chat-messages">
+      <% if(chats.length == 0){ %>
+        <div style="text-align:center; color:#94a3b8; margin-top:40px;">
+          <i class="fa-solid fa-comments" style="font-size:3rem; margin-bottom:16px;"></i>
+          <p>No messages yet. Start the conversation!</p>
+        </div>
+      <% } else { %>
+        <% chats.forEach(chat => { %>
+          <div class="message <%= chat.message_by == 'driver' ? 'me' : 'them' %>">
+            <%= chat.chat_value %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+    <div class="chat-input-area">
+      <textarea id="chatInput" placeholder="Type a message..." rows="3"></textarea>
+      <button id="sendChat" orderId="<%= order.order_id %>" disabled>Send Message</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/delivery_script.js"></script>
+</body>
+</html>
