@@ -171,7 +171,12 @@ let con = mysql.createConnection({
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
     database: process.env.MYSQLDATABASE,
-    port: process.env.DB_PORT || 3306
+    port: process.env.DB_PORT || 3306,
+     ssl: {
+        rejectUnauthorized: false
+    },
+    waitForConnections: true,
+    connectionLimit: 10
 });
 
 
