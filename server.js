@@ -166,17 +166,30 @@ function driver(req,res,next){
   next();
 }
 
-let con = mysql.createConnection({
-    host: process.env.MYSQLHOST,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    port: process.env.MYAQLPORT || 3306,
-     ssl: {
-        rejectUnauthorized: false
+const mysql = require("mysql2");
+
+// Create a pool for better performance
+const pool = mysql.createPool({
+    host: "caboose.proxy.rlwy.net",      // Railway public host
+    port: 29581,                          // Railway port
+    user: "root",                         // Railway username
+    password: process.env.MYSQLPASSWORD,       // Railway password
+    database: "dinesndash",               // The database you imported
+    ssl: {
+        rejectUnauthorized: false         // Required for external Railway connections
     },
     waitForConnections: true,
     connectionLimit: 10
+});
+
+// Test connection
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error("DB Connection Error:", err);
+        return;
+    }
+    console.log("Connected to Railway MySQL!");
+    connection.release();
 });
 
 
