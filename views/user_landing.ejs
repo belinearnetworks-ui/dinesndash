@@ -32,6 +32,7 @@
 
     <div class="app-container">
       <aside class="sidebar" id="sidebar">
+
         <div class="logo">
           <svg
             width="22"
@@ -49,7 +50,7 @@
             />
           </svg>
           <span>Dines<span style="color: var(--primary)">N</span>Dash</span>
-        </div>
+        </div>      
 
         <nav>
           <a href="#" class="nav-item active">
@@ -67,19 +68,7 @@
             </svg>
             Dashboard
           </a>
-          <a href="/fav/meals" class="nav-item">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                d="M12 21s-7-4.5-9-8a5 5 0 0 1 8-6l1 1 1-1a5 5 0 0 1 8 6c-2 3.5-9 8-9 8z"
-              />
-            </svg>
-            Favorites
+    <a href="/cravings"><i class="fa-solid fa-bowl-food"></i> My cravings</a>
           </a>
           <a href="/all/orders/users" class="nav-item">
             <svg
@@ -136,7 +125,7 @@
               <%= user.fullname %>
             </div>
           </div>
-          <button style="margin-left: auto; color: var(--gray)" id="logout">
+          <a href="/logout" style="margin-left: auto; color: var(--gray)" >
             <svg
               width="18"
               height="18"
@@ -148,9 +137,17 @@
               <path d="M21 12H9" />
               <path d="M12 19H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
             </svg>
-          </button>
+          </a>
         </div>
       </aside>
+      <div class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="/search/" class="nav-item"><i class="fas fa-search"></i><span>Browse</span></a>
+        <a href="/all/orders/users" class="nav-item"><i class="fa-solid fa-clipboard-list"></i><span>Orders</span></a>
+        <a href="/settings" class="nav-item"><i class="fas fa-user"></i><span>Account</span></a>
+        <a href="/logout" class="nav-item" id="logout"><i class="fa-solid fa-right-from-bracket"></i><span>Log Out</span></a>
+
+      </div>
 
       <main class="main-content">
         <header class="header">
@@ -227,32 +224,32 @@
             <i class="fa-solid fa-crown"></i>
             Favourites
           </button>
-            <button class="category-chip">
-          <i class="fa-solid fa-burger"></i>
-          burgers
-        </button>
-        <button class="category-chip">
-          <i class="fa-solid fa-pizza-slice"></i>
-          pizza
-        </button>
-        <button class="category-chip">
-          <i class="fa-solid fa-seedling"></i>
-          vegan
-        </button>
-        <button class="category-chip">
-          <i class="fa-solid fa-fish"></i>
-          seafood
-        </button>
-        <button class="category-chip">
-          <i class="fa-solid fa-bowl-rice"></i>
-          asian
-        </button>
-        <button class="category-chip">
-          <i class="fa-solid fa-ice-cream"></i>
-          desserts
-        </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-burger"></i>
+            burgers
+          </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-pizza-slice"></i>
+            pizza
+          </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-seedling"></i>
+            vegan
+          </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-fish"></i>
+            seafood
+          </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-bowl-rice"></i>
+            asian
+          </button>
+          <button class="category-chip">
+            <i class="fa-solid fa-ice-cream"></i>
+            desserts
+          </button>
         </div>
-      
+
         <div id="div_foodGrid"></div>
         <section class="food-grid" id="foodGrid"></section>
         <hr />
@@ -314,7 +311,22 @@
           <span id="cartTotal">R20.00</span>
         </div>
         <button class="checkout-btn" id="checkout-btn">Checkout</button>
-     
+        <br><br>
+        <div class="mode-toggle-container">
+          <div class="mode-toggle" id="serviceToggle">
+            <div class="toggle-slider"></div>
+            <button type="button" class="toggle-btn" data-mode="pickup">
+              Pickup
+            </button>
+            <button
+              type="button"
+              class="toggle-btn active"
+              data-mode="delivery"
+            >
+              Delivery
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <script src="/user_landing.js"></script>

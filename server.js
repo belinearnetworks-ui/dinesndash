@@ -5,18 +5,19 @@ require("dotenv").config();
 const express=require("express");
 const app=express();
 const path=require("path");
-const {Server}=require("socket.io");
+const Server=require("socket.io");
 const http=require("http");
 const mysql=require("mysql2");
 const passport=require("passport");
 const LocalStrategy=require("passport-local").Strategy;
+const GoogleStrategy=require("passport-google-oauth20").Strategy;
 const encrypt=require("bcrypt");
 const flash=require("express-flash");
 const session=require("express-session");
 const multer=require("multer");
 let dayjs=require("dayjs");
 dayjs.extend(customParseFormat);
-
+const UAParser=require("ua-parser-js")
 let Port=process.env.Port;
 const unsplash_id=process.env.unsplash_id
 const jwt=require("jsonwebtoken");
@@ -91,11 +92,16 @@ passport.use(new LocalStrategy((username,password,done)=>{
       return done(null,Results)
     })
   })
-}))
+}));
 
 passport.serializeUser((user,done)=>{
+  console.log("Serializing user:", user);
+  if(user.email==undefined){
+
+    return done(null,user.emails[0].value);
+  }
   return done(null,user.email)
-})
+});
 
 passport.deserializeUser((email,done)=>{
   con.query("select * from allusers where email=? AND verified=?",[email,true],(err,results)=>{
@@ -108,7 +114,17 @@ passport.deserializeUser((email,done)=>{
     let user=results[0];
     done(null,user)
   })
-})
+});
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.client_id,
+  clientSecret: process.env.client_secret, 
+  callbackURL: "http://localhost:4000/google/auth"
+},(accessToken,refreshToken,profile,done)=>{
+  console.log("Google profile",profile);
+  return done(null,profile);
+}
+))
 
 function NotAuthenticated(req,res,next){
     if(!req.isAuthenticated()){
@@ -150,20 +166,17 @@ function driver(req,res,next){
   next();
 }
 
-let con=mysql.createPool({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT,
-  waitForConnections: true,
-  connectionLimit: 10
-});
+let con=mysql.createConnection({
+    user:'Sizwe',
+    password:'Trigonometry',
+    host:"localhost",
+    database:"dinesndash"
+})
 
-// con.connect(err=>{
-//     if(err) throw err;
-//     console.log("Mysql Connected")
-// })
+con.connect(err=>{
+    if(err) throw err;
+    console.log("Mysql Connected")
+})
 
 app.get("/",authenticated,(req,res)=>{
     res.render("home")
@@ -191,7 +204,6 @@ app.get("/home",NotAuthenticated,async (req,res)=>{
   if(req.user.driver){
     return res.redirect("/home/driver")
   }
-  console.log("User info:",req.user.driver);
   try {
     if(!req.user.store){
       // console.log("Okay this is not a store but a user")
@@ -298,15 +310,16 @@ app.get("/home",NotAuthenticated,async (req,res)=>{
     return res.render("user_landing",{user:user_info[0],AllMeals:meals,promo:Promocodes[0],stores,msg:req.flash("error"),Category:categories[0],Meals});
 
     }else if(req.user.store){
-      let [orders]=await con.promise().query("SELECT o.*,u.fullname,m.meal_name from orders o JOIN meals m ON o.meal_id=m.meal_id join user_info u on u.id=o.user_id WHERE o.store_id=? and o.payment_status=? and o.order_status IN (?,?,?,?,?)",[req.user.id,"COMPLETE",'PAID', 'ACCEPTED','PREPARING','READY','WAITING_FOR_CODE']);
+      // let [orders]=await con.promise().query("SELECT o.*,u.fullname,m.meal_name from orders o JOIN meals m ON o.meal_id=m.meal_id join user_info u on u.id=o.user_id WHERE o.store_id=? and o.payment_status=? and o.order_status IN (?,?,?,?,?)",[req.user.id,"COMPLETE",'PAID', 'ACCEPTED','PREPARING','READY','WAITING_FOR_CODE']);
       let [ids]=await con.promise().query("SELECT id from orders o WHERE o.store_id=? and o.payment_status=? and o.order_status IN (?,?,?,?,?)",[req.user.id,"COMPLETE",'PAID', 'ACCEPTED','PREPARING','READY','WAITING_FOR_CODE']);
       order_ids.push(ids.map(item=>item.id));
       let [categories]=await con.promise().query("select * from catagories where store_id=?",[req.user.id]);
       let name=await con.promise().query("SELECT storename from store_info WHERE id=?",[req.user.id]);
       let cat_names=await con.promise().query("SELECT catagory_name from catagories");
       let your_cat_names=await con.promise().query("SELECT catagory_name from catagories where store_id=?",[req.user.id]);
-      let test=await con.promise().query("SELECT store_id ,GROUP_CONCAT(meal_id ORDER BY meal_id SEPARATOR ',') AS list from orders where store_id=? GROUP BY id",[req.user.id]);
-      console.log("Testing....",test)
+      // let test=await con.promise().query("SELECT o.store_id,u.fullname,m.meal_name ,GROUP_CONCAT(o.meal_id ORDER BY o.meal_id SEPARATOR ',') AS list from orders o JOIN user_info u ON u.id=o.user_id JOIN meals m ON m.meal_id=o.meal_id where o.store_id=? GROUP BY o.id",[req.user.id]);
+      // let [orders] = await con.promise().query(`SELECT o.id, o.store_id, u.fullname,o.payment_status,GROUP_CONCAT(m.meal_name ORDER BY m.meal_name SEPARATOR ', ') AS meals,GROUP_CONCAT(o.quantity ORDER BY o.quantity SEPARATOR ', ') AS quantities,GROUP_CONCAT(o.order_status ORDER BY o.order_status SEPARATOR ', ') AS statuses  FROM orders o JOIN user_info u ON u.id = o.user_id JOIN meals m ON m.meal_id = o.meal_id WHERE o.store_id = ? and o.payment_status=? and o.order_status IN (?,?,?,?,?) ORDER BY o.created_at DESC GROUP BY o.id, o.store_id, u.fullname`, [req.user.id,"COMPLETE",'PAID', 'ACCEPTED','PREPARING','READY','WAITING_FOR_CODE']);
+      let [orders] = await con.promise().query(`SELECT o.id, o.store_id, u.fullname,o.payment_status,o.created_at,GROUP_CONCAT(m.meal_name ORDER BY m.meal_name SEPARATOR ', ') AS meals,GROUP_CONCAT(o.quantity ORDER BY o.quantity SEPARATOR ', ') AS quantities,GROUP_CONCAT(o.order_status ORDER BY o.order_status SEPARATOR ', ') AS statuses FROM orders o JOIN user_info u ON u.id = o.user_id JOIN meals m ON m.meal_id = o.meal_id WHERE o.store_id = ? AND o.payment_status = ? AND o.order_status IN (?, ?, ?, ?, ?) GROUP BY o.id, o.store_id, u.fullname, o.payment_status, o.created_at ORDER BY o.created_at DESC`, [req.user.id, "COMPLETE", 'PAID', 'ACCEPTED', 'PREPARING', 'READY', 'WAITING_FOR_CODE']);
       cat_names=cat_names[0].map(item=>item.catagory_name);
       your_cat_names=your_cat_names[0].map(item=>item.catagory_name);
 
@@ -316,6 +329,7 @@ app.get("/home",NotAuthenticated,async (req,res)=>{
       let amounts=await con.promise().query("SELECT sales*SellingPrice AS Sale from meals where store_id=?",[req.user.id]);
       amounts=amounts[0]
       let Total=amounts.reduce((sum,{Sale})=>sum+Sale,0);
+      console.log(orders)
       
       return res.render("store_landing",{Data:categories,msg:req.flash("error"),Name:name[0][0].storename,Orders:orders,store_id:req.user.id,cat_names,your_cat_names,pending:pending[0].length,Total});
     }
@@ -328,6 +342,7 @@ app.get("/home",NotAuthenticated,async (req,res)=>{
     
   }
 });
+
 
 app.get("/home/driver", NotAuthenticated, driver, async (req, res) => {
   try {
@@ -349,6 +364,21 @@ app.get("/home/driver", NotAuthenticated, driver, async (req, res) => {
     throw error
   }
 });
+
+app.get("/download/app",async (req,res)=>{
+  try {
+    const parser = new UAParser(req.headers["user-agent"]);
+    const result = parser.getResult();
+
+    return res.render("download",{device:result.os.name,browser:result.browser.name});
+  } catch (error) {
+    if(error) throw error;
+  }
+});
+
+app.get("/privacy",async(req,res)=>{
+  return res.sendFile(path.join(__dirname,"assets","privacy.html"));
+})
 
 app.get("/driver/history",NotAuthenticated,driver,async(req,res)=>{
   try {
@@ -377,6 +407,13 @@ app.post("/updated/driver/location/:orderId",NotAuthenticated,driver,async (req,
   } catch (error) {
     if(error) throw error;
   }
+});
+
+app.get("/auth/google",passport.authenticate("google",{scope:["profile","email"]}));
+
+app.get("/google/auth",passport.authenticate("google",{failureRedirect:"/signup"}),(req,res)=>{
+  console.log("Google auth successful, user:", req.user);
+  res.redirect("/home");
 })
 
 app.get("/logout",NotAuthenticated,async (req,res)=>{
@@ -392,7 +429,7 @@ app.get("/logout",NotAuthenticated,async (req,res)=>{
 
     }
     req.session.destroy();
-    return res.json({Status:true});
+    return res.redirect("/signup");
   }catch(err){
     if(err) throw err;
   }
@@ -472,21 +509,14 @@ app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async 
             await con.promise().query("INSERT INTO allusers values(?,?,?,?,?,?,?,?)",[UserId,false,false,Body.UserSignupEmail,false,"0712603907",true,HashedPassword]);
             console.log("Done updating database. About to send email")
 
-
             console.log("Generating token and sending email...");
             const token = jwt.sign({email:Body.UserSignupEmail, Type:"user", ID:UserId}, process.env.JWT_SECRET, {expiresIn:"30m"});
-            console.log("Done generating toke:",token);
+            
             await EmailTranspoter.sendMail({
                 from: "futuredlalda33@gmail.com",
                 to: Body.UserSignupEmail,
                 subject: "Confirm your DinesNDash Account",
-                html: `<p>Click <a href="http://localhost:4000/auth/api/confirm/password?token=${token}">here</a> to confirm</p>`
-            },err=>{
-              if(err){
-                console.log("Error:",err);
-                return res.json({Status:false,Reason:"Email error"});
-
-              }
+                html: `<p>Click <a href="https://superfervent-comfortingly-amberly.ngrok-free.dev/auth/api/confirm/password?token=${token}">here</a> to confirm</p>`
             });
 
             console.log("Email sent");
@@ -504,6 +534,8 @@ app.post("/signup/api/auth/:type/:processingcode", upload.single("Logo"), async 
         return res.json({Status:false, Reason:"Server error. Try again later"});
     }
 });
+
+
 app.get("/auth/api/confirm/password/",async (req,res)=>{
     let Token=req.query.token;
     console.log(Token)
@@ -615,6 +647,51 @@ app.get("/reset-password/api/auth/reset", async (req, res) => {
   }
 });
 
+app.get('/reset-password/api/auth/reset/authenticated',NotAuthenticated,user,async(req,res)=>{
+  try {
+    return res.render("enter-password")
+  } catch (error) {
+    if(error) throw error;
+  }
+})
+
+app.post('/reset-password/api/auth/reset/authenticated',NotAuthenticated,user,async(req,res)=>{
+  try {
+    let [password]=await con.promise().query("SELECT password from user_info where id=?",[req.user.id]);
+    console.log("Password",[password]) 
+    password=password[0].password;
+    console.log("Backend Password",password)
+    let FrontendPassword=req.body.Password;
+    console.log("Frontend Password",FrontendPassword)
+    const isMatch = await encrypt.compare(FrontendPassword, password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        Status: false,
+        message: "Incorrect password"
+      });
+    }
+    
+    const resetCode = uuid.v4();
+    
+    const token = jwt.sign(
+      { email: req.user.email, code: resetCode },
+      process.env.JWT_SECRET,
+      { expiresIn: "20m" }
+    );
+    
+    return res.status(200).json({
+      Status: true,
+      url: `/reset-password/api/auth/reset?token=${token}`
+    });
+
+
+    // return res.status(400).json({Status:false,Reason:"Incorrect Password entered"});
+  } catch (error) {
+    if(error) throw error;
+  }
+})
+
 
 app.post("/reset/password",async(req,res)=>{
   try {
@@ -667,6 +744,10 @@ app.post("/update-profile",NotAuthenticated,user,async (req,res)=>{
   }
 });
 
+app.get("/terms",(req,res)=>{
+  return res.render("terms")
+})
+
 app.post("/accept/order",NotAuthenticated,driver,async (req,res)=>{
   try {
     console.log("Body",req.body)
@@ -701,7 +782,7 @@ app.post("/accept/order",NotAuthenticated,driver,async (req,res)=>{
   } catch (error) {
     throw error;
   }
-})
+});
 
 app.get("/order/for/driver/:order_id",NotAuthenticated,driver,async (req,res)=>{
   try {
@@ -853,17 +934,20 @@ app.get("/drivers/signup",authenticated,(req,res)=>{
   }
 })
 
-app.get("/search/:value",NotAuthenticated,user,async (req,res)=>{
+app.get("/search",NotAuthenticated,user,async (req,res)=>{
   try {
-    let cheap=await con.promise().query("SELECT * FROM meals ORDER BY SellingPrice DESC");
-    let Trending=await con.promise().query("SELECT * FROM meals ORDER BY sales DESC");
+
+    let cheap=await con.promise().query("SELECT m.*, s.storename,s.id,s.store_times,s.location FROM meals m JOIN store_info s ON m.store_id=s.id where availability=? ORDER BY SellingPrice DESC",["AVAILABLE"]);
+    let Trending=await con.promise().query("SELECT m.*, s.storename,s.id,s.store_times,s.location FROM meals m JOIN store_info s ON m.store_id=s.id where availability=? ORDER BY sales DESC",["AVAILABLE"]);
+
     cheap=cheap[0];
     Trending=Trending[0];
 
     let stores=await con.promise().query("SELECT storename,store_logo,id from store_info where verified=?",[true])
     stores=stores[0]
+    let Value=req.query.q;
     console.log(stores)
-    return res.render("search",{first_value:req.params.value,hot:Trending,cheap,stores})
+    return res.render("search",{first_value:Value,hot:Trending,cheap,stores})
 
     
   } catch (error) {
@@ -871,6 +955,13 @@ app.get("/search/:value",NotAuthenticated,user,async (req,res)=>{
   }  
 });
 
+app.get("/my/cravings",NotAuthenticated,user,async (req,res)=>{
+  try {
+    
+  } catch (error) {
+    if(error) throw error
+  }
+})
 
 app.post('/update/category/:Cat_id',NotAuthenticated,store,upload.single('category_pic'),async (req,res)=>{
   try {
@@ -904,17 +995,37 @@ app.post("/update/product/:meal_id",NotAuthenticated,store,upload.array("product
     let [code]=await con.promise().query("SELECT store_code from store_info where id=?",[req.user.id])
     code=code[0];
     console.log(code);
+    console.log("First debbuging stage")
     if(req.body.safety_code!==code.store_code||req.body.safety_code==""){
-      return res.sendFile(path.join(__dirname,"assets","error500.html"));
+      return res.status(400).json({success:false,message:"Incorrect Safe code"})
     }
 
     let body=req.body;
     if(body.product_name==""||body.product_price==""||body.from==""||body.to==""||body.ingredients==""){
-      return res.sendFile(path.join(__dirname,"assets","error500.html"));
+      return res.status(400).json({success:false,message:"Internal error"})
+    }
+    console.log("Second debbuging stage")
+
+    let [images]=await con.promise().query("SELECT Images from meals WHERE meal_id=?",[req.params.meal_id]);
+    images=JSON.parse(images[0].Images);
+    console.log("Images",images);
+    console.log("Type",typeof(images))
+    let Body=req.body;
+
+
+    if(req.files){
+      for(file of req.files){
+        let Filename=body.product_name+uuid.v4()+path.extname(file.originalname);
+        let ToFile=path.join(__dirname,"uploads",Filename);
+
+        await sharp(file.buffer).jpeg({quality: 90}).resize({width:390}).toFile(ToFile)
+        images.push(Filename)
+      }
+      await con.promise().query("UPDATE meals SET meal_name=?,price=?,SellingPrice=?,TimeFrom=?,TimeTo=?,ingredients=?,Images=? WHERE meal_id=?",[Body.product_name,Body.product_price,Body.product_price*1.25,Body.from,Body.to,Body.ingredients,JSON.stringify(images),req.params.meal_id])
+      return res.json({success:true});
     }
 
-    console.log("Body",req.body)
-    await con.promise().query("UPDATE meals SET meal_name=?,price=?,SellingPrice=?")
+    await con.promise().query("UPDATE meals SET meal_name=?,price=?,SellingPrice=?,TimeFrom=?,TimeTo=?,ingredients=? WHERE meal_id=?",[Body.product_name,Body.product_price,Body.product_price*1.25,Body.from,Body.to,Body.ingredients,req.params.meal_id])
 
   } catch (error) {
     if(error) throw error;
@@ -939,13 +1050,14 @@ app.post('/meal/availability/:a/:meal_id',NotAuthenticated,store,async (req,res)
   }
 })
 
-app.post("/search/:value",NotAuthenticated,user,async (req,res)=>{
+app.post("/search/",NotAuthenticated,user,async (req,res)=>{
   try {
     // let stores=await con.promise().query(`SELECT s.storename,s.id from store_info s ON JOIN meals m ON m.store_id=s.id where s.storename REGEXP ? AND s.verified=${true}`,[req.params.value]);
-    let stores = await con.promise().query(`SELECT DISTINCT s.storename, s.id FROM store_info s JOIN meals m ON m.store_id = s.id WHERE s.storename REGEXP ? AND s.verified = 1`, [`.*${req.params.value}.*`]);
+    let query=req.query.q;
+    let stores = await con.promise().query(`SELECT DISTINCT s.storename, s.id FROM store_info s JOIN meals m ON m.store_id = s.id WHERE s.storename REGEXP ? AND s.verified = 1`, [`.*${query}.*`]);
 
-    let meals=await con.promise().query("select * from meals m JOIN catagories c on m.Cat_id=c.Cat_id where m.meal_name REGEXP ? OR m.keywords REGEXP ? OR c.catagory_name REGEXP ?",[req.params.value,req.params.value,req.params.value]);
-    let categories=await con.promise().query("select * from catagories where catagory_name REGEXP ? ",[req.params.value]);
+    let meals=await con.promise().query("select * from meals m JOIN catagories c on m.Cat_id=c.Cat_id where m.meal_name REGEXP ? OR m.keywords REGEXP ? OR c.catagory_name REGEXP ?",[query,query,query]);
+    let categories=await con.promise().query("select * from catagories where catagory_name REGEXP ? ",[query]);
     categories=categories[0]
     meals=meals[0]
     stores=stores[0]
@@ -1052,9 +1164,192 @@ app.get("/meal/details/:meal_id", NotAuthenticated, user, async (req, res) => {
   }
 });
 
+app.get('/cravings',NotAuthenticated,user,async (req,res)=>{
+  try {
+    let [meals]= await con.promise().query("SELECT * FROM meals where Availability=?",["AVAILABLE"]);
+    // let [Cravings]=await con.promise().query("SELECT c.*,SUM(s.amount) AS total_contribution from cravings_list c JOIN contribute s ON s.crave_id=c.crave_id where c.user_id=?",[req.user.id]);
+    let [Cravings] = await con.promise().query(`
+    SELECT 
+        c.*, 
+        IFNULL(SUM(s.amount), 0) AS total_contribution 
+    FROM cravings_list c 
+    LEFT JOIN contribute s ON s.crave_id = c.crave_id 
+    WHERE c.user_id = ?
+    GROUP BY c.crave_id
+`, [req.user.id]);
+    return res.render("craving_list",{Cravings,meals})
+  } catch (error) {
+    if(error) throw error
+  }
+});
+
+app.get("/contribute/:id",async(req,res)=>{
+  try {
+    let [list]=await con.promise().query("select c.*,u.fullname from cravings_list c JOIN user_info u ON u.id=c.user_id where c.crave_id=?",[req.params.id]);
+    if(list.length==0) return res.redirect("/home");
+    console.log("List",list)
+    let products=JSON.parse(list[0].Products);
+    const ids = Object.keys(products);
+    let arr=[]
+    for(let id of ids){
+      let [amount]=await con.promise().query("SELECT * FROM meals where meal_id=?",[id]);
+      amount=amount[0]
+      let object={
+        meal_name:amount.meal_name,
+        quantity:products[id],
+        price:amount.SellingPrice
+      }
+      arr.push(object)
+    }  
+    console.log("Arr",arr)
+    list=list[0]
+    return res.render("contribute",{list,arr})
+  } catch (error) {
+    if(error) throw error;
+  }
+})
+async function calculateTotal(itemsObject) {
+    // itemsObject looks like: { "12": 2, "13": 1 }
+    const ids = Object.keys(itemsObject);
+
+    if (ids.length === 0) return 0;
+
+    // 1. Fetch prices for all IDs in the list at once
+    const [meals] = await con.promise().query(
+        "SELECT meal_id, SellingPrice FROM meals WHERE meal_id IN (?)", 
+        [ids]
+    );
+
+    // 2. Calculate the total
+    let grandTotal = 0;
+
+    meals.forEach(meal => {
+        const quantity = itemsObject[meal.meal_id]; // Get qty from your object
+        const price = meal.SellingPrice;            // Get price from DB
+        
+        grandTotal += price * quantity;
+    });
+
+    return grandTotal;
+};
+
+app.post("/create/eats",NotAuthenticated,user,async (req,res)=>{
+  try {
+    let eatsId=uuid.v4();
+    let order_id=uuid.v1();
+    let Date=req.body.dates;
+    if(Date.StartDate==""||Date.EndDate==""){
+      return res.json({Status:false,reason:"Please provide valid dates"})
+    }
+    if(dayjs(Date.StartDate).isAfter(dayjs(Date.EndDate))||dayjs(Date.StartDate).isBefore(dayjs())){
+      return res.json({Status:false,reason:"Please provide valid dates"})
+    }
+    let Now=dayjs().format("YYYY-MM-DD HH:mm");
+    let obj=req.body.data;
+    for (let day of Object.keys(obj)) {
+      let dayData = obj[day]; 
+    
+      for (let type of Object.keys(dayData)) {
+        let meals = dayData[type];
+    
+        let arr = [];
+        let names = [];
+        let locked_Amount = 0;
+    
+        for (let el of meals) {
+          if (el.mealId) arr.push(el.mealId);
+          names.push(el.name);
+    
+          if (el.price) locked_Amount += Number(el.price);
+        }
+    
+        arr = JSON.stringify(arr);
+        names = JSON.stringify(names);
+    
+        await con.promise().query(
+          "INSERT INTO autoeats_meals VALUES(?,?,?,?,?,?,?,?,?,?)",
+          [
+            eatsId,
+            arr,
+            names,
+            day,          
+            type,         
+            null,
+            "CREATED",
+            "NOT PAID",
+            order_id,
+            locked_Amount
+          ]
+        );
+      }
+    }
+    await con.promise().query("INSERT INTO autoeats VALUES(?,?,?,?,?,?)",[req.user.id,eatsId,Date.StartDate,Date.EndDate,"CREATED",Now]);
+    return res.json({Status:true});
+  } catch (error) {
+    // if(error) throw error;
+    return res.json({Status:false,reason:"Sorry something went wrong.Please try again"})
+  }
+})
+
+app.get("/autoeats",NotAuthenticated,user,async (req,res)=>{
+  try {
+    let [eats]=await con.promise().query("SELECT a.*,m.*,SUM(m.locked_Amount) over() AS total FROM autoeats a JOIN autoeats_meals m ON m.autoeats_id=a.eats_id where a.user_id=?",[req.user.id]);
+    console.log("Eats",eats);
+    return res.render("autoeats_home",{eats})
+  } catch (error) {
+    if(error) throw error;
+  }
+})
+
+app.get("/create/autoeats",NotAuthenticated,user,async (req,res)=>{
+  try {
+    let [meals]=await con.promise().query("SELECT m.*,s.storename,c.catagory_name FROM meals m JOIN store_info s ON  m.store_id=s.id JOIN catagories c ON c.store_id=s.id WHERE availability=?",["AVAILABLE"]);
+
+    return res.render("autoeats",{meals});
+  } catch (error) {
+    if(error) throw error
+  }
+})
+
+app.post("/create-cravings",NotAuthenticated,user,async (req,res)=>{
+  // 1. Stringify the items object (MySQL needs a string/text/json format)
+  const productsData = JSON.stringify(req.body.items);
+  let total=await calculateTotal(req.body.items);
+  
+  
+  // 2. Prepare the SQL with Backticks for reserved words
+  const sql = `
+      INSERT INTO cravings_list 
+      (\`user_id\`, \`crave_id\`, \`TYPE\`, \`paid\`,\`total\`, \`Date\`, \`Visibility\`, \`LINK\`, \`Products\`, \`Created_at\`) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)
+  `;
+  
+  let id=uuid.v4();
+  let link=`https://superfervent-comfortingly-amberly.ngrok-free.dev/contribute/${id}`
+  // 3. Match the 8 values to the 8 question marks
+  const values = [
+      req.user.id, 
+      id, 
+      req.body.type,
+      0,total, 
+      dayjs(req.body.release).format("YYYY-MM-DD HH:mm"), // Fixed YYYY
+      req.body.visibility, 
+      link, 
+      productsData, // The stringified object
+      dayjs().format("YYYY-MM-DD HH:mm")];
+  
+  try {
+      await con.promise().query(sql, values);
+      res.json({ status: true });
+  } catch (error) {
+      console.error("SQL Error:", error);
+      res.status(500).json({ status: false, message: error.message });
+  }
+})
+
 app.get("/all/orders/users",NotAuthenticated,user,async (req,res)=>{
   try {
-    let orders=await con.promise().query("SELECT * FROM orders where user_id=?",[req.user.id]);
+    let orders=await con.promise().query("SELECT * FROM orders where user_id=? ORDER BY created_at  DESC",[req.user.id]);
     // console.log("Orders",orders);
     let user=await con.promise().query("select fullname from user_info where id=?",[req.user.id]);
     return res.render("all_orders",{Orders:orders[0],user:user[0][0]});
@@ -1121,7 +1416,9 @@ app.get("/store/:id",NotAuthenticated,user,async (req,res)=>{
     let user=await con.promise().query("select fullname from user_info where id=?",[req.user.id]);
     console.log("Categories", Categories[0])
     console.log(StoreName[0][0])
-    return res.render("store_info",{storename:StoreName[0][0].storename,Deals:Deals[0],Trending:Trending[0],Categories:Categories[0],user:user[0][0]});
+    let [meals]=await con.promise().query("SELECT m.*, s.storename,s.id,s.store_times,s.location FROM meals m JOIN store_info s ON m.store_id=s.id where availability=? AND store_id=?",["AVAILABLE",req.params.id]);
+    console.log("meals: ",meals)
+    return res.render("store_info",{storename:StoreName[0][0].storename,Deals:Deals[0],Trending:Trending[0],Categories:Categories[0],user:user[0][0],AllMeals:meals});
   } catch (error) {
     if(error){
       throw error
@@ -1165,7 +1462,7 @@ app.post("/upload/meal/:storeId/:catId",NotAuthenticated,store,upload.array("ima
     }
     images=JSON.stringify(images);
     let meal_id=uuid.v1();
-    con.promise().query("INSERT INTO meals values(?,?,?,?,?,?,?,?,?,?,?,?)",[req.params.storeId,req.params.catId,meal_id,req.body.MealName,req.body.price,req.body.price*1.25,0,images,req.body.ingredients,req.body.keywords,req.body.from,req.body.to]);
+    con.promise().query("INSERT INTO meals values(?,?,?,?,?,?,?,?,?,?,?,?,?)",[req.params.storeId,req.params.catId,meal_id,req.body.MealName,"AVAILABLE",req.body.price,req.body.price*1.25,0,images,req.body.ingredients,req.body.keywords,req.body.from,req.body.to]);
     return res.status(200).json({Status:true});
   }catch(err){
     if(err){
@@ -1444,9 +1741,47 @@ app.post("/gateway",NotAuthenticated,user,async (req,res)=>{
     BackendTotal+=order.qty*order.SellingPrice
   });
 
+  console.log(Orders)
+  console.log(Orders[0])
+  let where=Orders[0].id||Orders[0].store_id;
+  console.log("Where", where)
+  let [location]=await con.promise().query("SELECT location from store_info WHERE id=?",[where]);
+  console.log(location)
+  location=location[0];
+  let delivery_fee;
+
+  if(req.body.location!==null){
+    console.log(req.body.location);
+    console.log(location);
+    let loc1=JSON.parse(location.location);
+    let loc2={lat:req.body.location.lat,lng:req.body.location.lng};
+    console.log("Loc 1:",loc1," And loc2",loc2);
+    let distance=getDistanceInMeters(loc1,loc2);
+    console.log("Distance",distance);
+    if(distance<=1000){
+        delivery_fee=25;
+    }else if(distance>1000){
+      let addedDistance=distance-1000;
+      let extraFee=addedDistance*0.01;
+      console.log("Extra Fee:",extraFee);
+      delivery_fee=25+extraFee;
+      console.log("Total Delivery Fee: R",delivery_fee);
+    }
+  }else{
+    delivery_fee=35
+  }
+  delivery_fee=Number(delivery_fee.toFixed(2))
+  BackendTotal=Number(BackendTotal);
+  FrontendTotal=Number(FrontendTotal.toFixed(2));
+
+
+  BackendTotal+=delivery_fee;
+
+
+  console.log("Delivery Fee: ",delivery_fee.toFixed(2));
   console.log("Backend Total",BackendTotal);
   console.log("Frontend Total",FrontendTotal);
-
+  console.log("Type:",typeof(FrontendTotal));
   if(BackendTotal!==FrontendTotal){
     throw new Error("Hmm something is fishy")
   }
@@ -1462,7 +1797,10 @@ app.post("/gateway",NotAuthenticated,user,async (req,res)=>{
    NewTotal+=sellingprice[0][0].sellingPrice*order.qty;
   }
 
+  NewTotal+=delivery_fee;
+
   console.log("new Total",NewTotal);
+
   if(NewTotal!==FrontendTotal){
     throw new Error("Error!")
   }
@@ -1483,28 +1821,40 @@ app.post("/gateway",NotAuthenticated,user,async (req,res)=>{
     }
 
     let geolocation=req.body.location;
-    let userLocation={lat:geolocation.lat,lng:geolocation.lng};
+    let userLocation
+    if(geolocation!=null){
+      userLocation={lat:geolocation.lat,lng:geolocation.lng};
+      userLocation=JSON.stringify(userLocation);
+    }else{
+      userLocation=null
+    }
     let first=Orders[0].id;
-    let [store_location]=await con.promise().query("SELECT location from store_info where id=?",[first]);
-    store_location=JSON.parse(store_location[0].location);
-    let distance=getDistanceInMeters(store_location,userLocation);
-    userLocation=JSON.stringify(userLocation);
-    let deliveryFee=0;
-    if(distance<=1000){
-        deliveryFee=25;
-    }else if(distance>1000){
-        let addedDistance=distance-1000;
-        let extraFee=addedDistance*0.01;
-        console.log("Extra Fee:",extraFee.toFixed(2));
-        deliveryFee=25+extraFee;
-        console.log("Total Delivery Fee: R",deliveryFee.toFixed(2));
-    }
 
-    for(let item of Orders){
-      await con.promise().query("INSERT INTO orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[orderId,req.user.id,item.id,item.meal_id,item.qty,order_code,user_order_code,"PENDING","none",item.SellingPrice*item.qty,NewTotal+deliveryFee,status,req.body.promocode,"CREATED","no",null,null,"no","DILIVERY","WAITING_FOR_DRIVER",deliveryFee,null,userLocation,null,null,null,Today,Today]);
-    }
 
-    cartTotal+=(NewTotal+deliveryFee);
+    
+    if(req.body.Type=="DELIVERY"){
+      console.log("The order will be delivered to the user")
+      let [store_location]=await con.promise().query("SELECT location from store_info where id=?",[first]);
+      store_location=JSON.parse(store_location[0].location);
+    
+      for(let item of Orders){
+        await con.promise().query("INSERT INTO orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[orderId,req.user.id,item.id,item.meal_id,item.qty,order_code,user_order_code,"PENDING","none",item.SellingPrice*item.qty,NewTotal+delivery_fee,status,req.body.promocode,"CREATED","no",null,null,"no","DILIVERY","WAITING_FOR_DRIVER",delivery_fee,null,userLocation||null,null,null,null,Today,Today]);
+      }
+  
+    }else{
+
+      console.log("Order Code",orderCode)
+      console.log("Order Id",orderId);
+   
+      for(let item of Orders){
+        console.log("Item",item)
+        await con.promise().query("INSERT INTO orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[orderId,req.user.id,item.id,item.meal_id,item.qty,order_code,user_order_code,"PENDING","none",item.SellingPrice*item.qty,NewTotal,status,req.body.promocode,"CREATED","no",null,null,"no","PICKUP","NOT APPLICABLE",0,null,userLocation||null,null,null,null,Today,Today]);
+
+      }
+    }
+    
+
+    cartTotal+=(NewTotal+delivery_fee);
     console.log("Cart Total", cartTotal);
 
     return res.json({Status:true, RedirectURL:"/gateway/payment/route/"+orderId});
@@ -1615,6 +1965,55 @@ function decrypt(encryptedData) {
 
   return decrypted;
 }
+
+app.post("/api/contribute/:crave_id",async (req,res)=>{
+  try {
+    console.log(req.body);
+    let Contributor_id=uuid.v4();
+    await con.promise().query("INSERT INTO contribute VALUES(?,?,?,?,?,?,?,?,?,?)",[req.params.crave_id,Contributor_id,req.body.name,req.body.cellphone,req.body.email,req.body.msg||null,req.body.amount,"PENDING",null,null]);
+    let merchant_id=process.env.Merchant_ID;
+    let merchant_key=process.env.Merchant_Key;
+    let passphrase=process.env.passphrase;
+    let basic_url=process.env.ngrok_url;
+    let return_url=`${basic_url}payment/response`;
+    let cancel_url=`${basic_url}payment/cancel`;
+    let notify_url=`${basic_url}payment/notify/crave`;
+    // let pfHost="sandbox.payfast.co.za";
+    const myData = [];
+    // Merchant details
+    myData["merchant_id"] = merchant_id;
+    myData["merchant_key"] = merchant_key;
+    myData["return_url"] = return_url;
+    myData["cancel_url"] = cancel_url;
+    myData["notify_url"] = notify_url;
+    // Buyer details
+    myData["email_address"] = req.body.email;
+    // Transaction details
+    myData["m_payment_id"] = Contributor_id; //Unique payment ID to pass through to notify_url
+    myData["amount"] = Number(req.body.amount)+2.30;
+    myData["item_name"] = `Order#${req.params.crave_id}`;
+    
+    // Generate signature
+    const myPassphrase = passphrase;
+    myData["signature"] = generateSignature(myData, myPassphrase);
+    
+    let htmlForm = `<form action="https://${pfHost}/eng/process" method="post">`;
+    for (let key in myData) {
+      if(myData.hasOwnProperty(key)){
+        value = myData[key];
+        if (value !== "") {
+          htmlForm +=`<input name="${key}" type="hidden" value="${value}" />`;
+        }
+      }
+    }
+    
+    htmlForm += '<input type="submit" value="Pay Now" id="payfast-btn" /></form>';
+   
+    return res.send(htmlForm);
+  } catch (error) {
+    if(error) throw error;
+  }
+})
 
 // checking out
 app.post("/checkout/first",NotAuthenticated,user,async (req,res)=>{
@@ -1736,6 +2135,23 @@ const pfValidPaymentData = async (pfData) => {
   return Math.abs(cartTotal - amountGross) <= 0.01;
 };
 
+const pfValidCravePaymentData = async (pfData) => {
+  const [order] = await con.promise().query(
+    "SELECT amount FROM contribute WHERE contribute_id = ?",
+    [pfData.m_payment_id]
+  );
+  console.log("Contributor Id",pfData.m_payment_id)
+  console.log("Order Data:",order)
+  console.log(!order[0])
+  if (!order[0]) return false;
+  console.log("Passed first test");
+
+  const cartTotal = parseFloat(order[0].amount);
+  const amountGross = parseFloat(pfData.amount_net);
+
+  return Math.abs(cartTotal - amountGross) <= 0.01;
+};
+
 const pfValidServerConfirmation = async (pfHost, pfParamString) => {
   try {
     const res = await axios.post(`https://${pfHost}/eng/query/validate`, pfParamString);
@@ -1746,9 +2162,62 @@ const pfValidServerConfirmation = async (pfHost, pfParamString) => {
   }
 };
 
+app.post("/payment/notify/crave", async (req, res) => {
+  try {
+    // Now req.body exists
+    const pfData = { ...req.body };
+
+    // Build param string exactly like docs
+    let pfParamString = "";
+    for (let key in pfData) {
+      if (key !== "signature") {
+        pfParamString += `${key}=${encodeURIComponent(pfData[key].trim()).replace(/%20/g, "+")}&`;
+      }
+    }
+    pfParamString = pfParamString.slice(0, -1);
+
+    // Run all checks
+    const check1 = pfValidSignature(pfData, pfParamString, passphrase);
+    const check2 = await pfValidIP(req);
+    const check3 = await pfValidCravePaymentData(pfData);
+    const check4 = await pfValidServerConfirmation(pfHost, pfParamString);
+    console.log(req.body)
+    if (check1 && check2 && check3 && check4) {
+      console.log("Everything is fine in payments")
+      // await con.promise().query("UPDATE orders SET order_status='paid',payment_status=?,updated_at=?,payment_reference=? where id=?",[req.body.payment_status,dayjs().format("YYYY-MM-DD HH:mm"),req.body.pf_payment_id,req.body.m_payment_id]);
+      await con.promise().query("UPDATE contribute SET payment_status=?,payment_id=?,payment_date=? where contribute_id=?",["PAID",req.body.pf_payment_id,dayjs().format("YYYY-MM-DD HH:mm"),req.body.m_payment_id]);
+      let [crave_id]=await con.promise().query("SELECT crave_id from contribute where contribute_id=?",[req.body.m_payment_id]);
+      crave_id=crave_id[0].crave_id;
+      await con.promise().query("UPDATE cravings_list SET paid=paid+? where crave_id=?",[req.body.amount_net,crave_id]);
+    } else {
+      console.log("Payment validation failed!");
+      console.log(check1,check2,check3,check4);
+      console.log(req.body);
+      console.log(req.body.payment_status);
+      // await con.promise().query("INSERT INTO error_transactions values (m_payment_id=?,pf_payment_id=?,payment_status=?,signature=?,email=?)",[req.body.m_payment_id,req.body.pf_payment_id,req.body.payment_status,req.body.signature,req.body.email_address])
+      await con.promise().query(`INSERT INTO error_transactions (m_payment_id, pf_payment_id, payment_status, signature, email)VALUES (?, ?, ?, ?, ?)`,[req.body.m_payment_id,req.body.pf_payment_id,req.body.payment_status,req.body.signature,req.body.email_address ]);
+      return res.redirect('/home')
+
+    }
+    let [ids]=await con.promise().query("SELECT store_id from orders where id=?",[req.body.m_payment_id]);
+    let IDS=ids.map(item=>item.store_id);
+    console.log(IDS);
+    io.emit("New Order Alert",{
+      TheIds:IDS
+    });
+    cartTotal=0
+    res.send("OK");
+  } catch (err) {
+    console.error(err);
+    // res.status(500).send("ERROR");
+    throw err
+  }
+});
+
 app.post("/payment/notify", async (req, res) => {
   try {
     // Now req.body exists
+    console.log("Original Payment Notify recieved")
     const pfData = { ...req.body };
 
     // Build param string exactly like docs
@@ -1838,10 +2307,10 @@ app.post("/checkout/second/order/action/:safeCode",NotAuthenticated,store,async 
 
   try {
     if(req.body.Status=="ACCEPTED"){
-      await con.promise().query("update orders SET order_status=?,accepted_at=?,updated_at=? WHERE id=? AND meal_id=? AND store_id=?",[req.body.Status,Now,Now,req.body.order_id,req.body.meal_id,req.user.id]);
+      await con.promise().query("update orders SET order_status=?,accepted_at=?,updated_at=? WHERE id=? AND store_id=?",[req.body.Status,Now,Now,req.body.order_id,req.user.id]);
     }else  if(req.body.Status=="READY"){
       console.log("Order status is ready")
-      await con.promise().query("update orders SET order_status=?,prepared_at=?,updated_at=? WHERE id=? AND meal_id=? AND store_id=?",[req.body.Status,Now,Now,req.body.order_id,req.body.meal_id,req.user.id]);
+      await con.promise().query("update orders SET order_status=?,prepared_at=?,updated_at=? WHERE id=? AND store_id=?",[req.body.Status,Now,Now,req.body.order_id,req.user.id]);
     }else{
       return res.status(400).json({status:false})
     }    
@@ -1867,53 +2336,63 @@ io.on("connection",socket=>{
   })
 });
 
+
+
 app.post("/check/order/code",NotAuthenticated,store,async (req,res)=>{
   try {
    let data=req.body;
-   let OrderCode=data.OrderCode;
+   let OrderCode=JSON.parse(data.OrderCode);
    let order_id=data.order_id;
-   let meal_id=data.meal_id;
+   let [MealIds]=await con.promise().query("SELECT meal_id FROM orders WHERE id=?",[order_id])
    let store_id=data.store_id
-   console.log("Meal ID",meal_id);
+   let Code;
+   let status;
+   console.log("Meal Id's",MealIds)
    console.log("order id",order_id);
    let check=await con.promise().query("SELECT storename from store_info where id=?",[store_id]);
    if(check[0][0].length===0){
      console.log("error",check)
      return
    }
-   let Code=await con.promise().query("SELECT oder_code from orders where id=? AND meal_id=?",[order_id,meal_id]);
-   console.log("code",Code);
-   console.log("Length",Code[0].length)
-   if(Code[0].length==0){
-     return socket.emit("Order code Error",{
-       message:`Hmmm.. Something went wrong, please refresh the page and try again.`
-     })
+   let [delivery_type]=await con.promise().query("SELECT dilivery_type FROM orders where id=?",[order_id]);
+   if(delivery_type[0].dilivery_type=="PICKUP"){
+    status="COLLECTED"
+    Code=await con.promise().query("SELECT user_code from orders where id=? ",[order_id]);
+    Code=Code[0][0].user_code
+   }else{
+    status="COLLECTED_BY_DRIVER"
+    Code=await con.promise().query("SELECT oder_code from orders where id=? ",[order_id]);
+    Code=Code[0][0].oder_code
    }
-   Code=Code[0][0].oder_code;
-  //  console.log("Returned Code",Code);
+
+   Code=Number(Code)
+
    if(Code!==OrderCode){
     return res.json({Status:false,reason:"Codes do not match. Try again"})
    }
    console.log("Everything is fine")
    let Now=dayjs().format("YYYY-MM-DD HH:mm:ss");
-   await con.promise().query("UPDATE orders SET order_status=?,updated_at=?,collected_at=?,delivery_status=? WHERE oder_code=? AND meal_id=? AND id=?",["COLLECTED_BY_DRIVER",Now,Now,"COLLECTED_BY_DRIVER",Code,meal_id,order_id]);
+   await con.promise().query("UPDATE orders SET order_status=?,updated_at=?,collected_at=?,delivery_status=? WHERE oder_code=? AND id=?",[status,Now,Now,"COLLECTED_BY_DRIVER",Code,order_id]);
    await con.promise().query("UPDATE delivery SET delivery_status=? where order_id=?",["FETCHED",order_id]);
-   let quantity=await con.promise().query("select quantity from orders where id=? and meal_id=? and oder_code=?",[order_id,meal_id,Code]);
-   let amount=await con.promise().query("select amount from orders where id=? and meal_id=? and oder_code=?",[order_id,meal_id,Code]);
-   let promocode=await con.promise().query("select promocode from orders where id=? and meal_id=? and oder_code=?",[order_id,meal_id,Code]);
-   quantity=quantity[0][0].quantity;
-   amount=amount[0][0].amount;
-   promocode=promocode[0][0].promocode;
-   console.log("promo",promocode);
-   if(promocode!==""){
-     await con.promise().query("Update promocodes set number_of_times_used=number_of_times_used+1 where promocode=?",[promocode])
-   }
-   console.log("Quantity",quantity);
-   // await con.promise().query("UPDATE meals SET sales=sales+? WHERE meal_id=?",[quantity,meal_id]);
-   // await con.promise().query("UPDATE store_wallet SET amount=amount+? where store_id=?",[amount,store_id])
+   for(let meal of MealIds){
+    let quantity=await con.promise().query("select quantity from orders where id=? and meal_id=?",[order_id,meal.meal_id]);
+    let amount=await con.promise().query("select amount from orders where id=? and meal_id=?",[order_id,meal.meal_id]);
+    let promocode=await con.promise().query("select promocode from orders where id=? and meal_id=? ",[order_id,meal.meal_id]);
+    console.log(quantity)
+    quantity=quantity[0][0].quantity;
+    amount=amount[0][0].amount;
+    promocode=promocode[0][0].promocode;
+    console.log("promo",promocode);
+    if(promocode!==""){
+      await con.promise().query("Update promocodes set number_of_times_used=number_of_times_used+1 where promocode=?",[promocode])
+    }
+    console.log("Quantity",quantity);
+    if(status=="COLLECTED"){
+     await con.promise().query("UPDATE meals SET sales=sales+? WHERE meal_id=?",[quantity,meal.meal_id]);
+     await con.promise().query("UPDATE store_wallet SET amount=amount+? where store_id=?",[amount,store_id])
+    }
 
-   console.log("Amount",amount);
-   console.log("Quantity",quantity)
+    }
    io.emit("Data Base Updated",{
      order_id:order_id,
      status:"COLLECTED"

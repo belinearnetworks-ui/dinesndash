@@ -4,6 +4,10 @@ let cart = JSON.parse(localStorage.getItem("Cart")) || [];
 let code;
 let date;
 let currentFilter = 'all';
+let subtotal = 0.00;
+let displayedDeliveryFee = 0.00;
+
+console.log("Fee",displayedDeliveryFee)
 
 let currentCartStoreFilter = 'all'; 
 
@@ -162,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("search-input").addEventListener("input",(e)=>{
     
     let Value=e.target.value
-    return window.location.href=`/search/${Value}`
+    return window.location.href=`/search?q=${Value}`
 })
 
 // --- ICONS (Helper) ---
@@ -304,7 +308,7 @@ function renderFood(filter = 'all', searchTerm = '',Data,title,Class,id,div_id) 
                         <div class="restaurant-name" ><a href="/store/${item.store_id}">${ICONS.store} ${item.storename}</a></div>
                         ${closes}
                     </div>
-                    <div class="item-price">R${item.SellingPrice}</div>
+                    <div class="item-price"><small style="text-decoration:line-through;color:var(--gray);">R${item.SellingPrice}</small >R${item.price-0.01}</div>
                 </div>
                 <button class="${cartButtonClass}" onclick="addToCart('${item.meal_id}')" ${inCart ? 'disabled' : ''}>
                     ${cartButtonText}
@@ -320,6 +324,7 @@ function renderFood(filter = 'all', searchTerm = '',Data,title,Class,id,div_id) 
 // --- CART LOGIC ---
 function addToCart(meal_id) {
     // Find item in master data
+    console.log("Current Subtotal before adding:", subtotal);
     const item = foodData.find(f => String(f.meal_id) === String(meal_id));
     if (!item) return console.error("Item not found");
     
@@ -373,7 +378,7 @@ function addToCart(meal_id) {
         cart.push({ 
             meal_id: item.meal_id,
             meal_name: item.meal_name,
-            SellingPrice: item.SellingPrice,
+            SellingPrice: item.price-0.01,
             Images: item.Images,
             storename: item.storename,
             id:item.store_id,
@@ -397,6 +402,8 @@ function addToCart(meal_id) {
 }
 
 function updateCartQty(meal_id, change) {
+
+
     const val = parseInt(change); 
     const index = cart.findIndex(c => String(c.meal_id) === String(meal_id));
     
@@ -416,6 +423,8 @@ function updateCartQty(meal_id, change) {
 }
 
 function updateCartUI() {
+    subtotal = 0;
+    displayedDeliveryFee = 0;
     const cartList = document.getElementById('cartItems');
     const badge = document.getElementById('cart-badge');
     const subtotalEl = document.getElementById('cartSubtotal');
@@ -462,15 +471,14 @@ function updateCartUI() {
     // 5. Render Items and Calculate Totals
     cartList.innerHTML = filterHTML;
     
-    let subtotal = 0;
-    let displayedDeliveryFee = 0;
+    
 
     itemsToDisplay.forEach(item => {
         const itemTotal = parseFloat(item.SellingPrice) * item.qty;
         subtotal += itemTotal;
         
         // We track delivery fee based on the filtered selection
-        displayedDeliveryFee = item.deliveryFee; 
+        displayedDeliveryFee = Number(item.deliveryFee)||0; 
 
         let imgPath = (item.Images && item.Images.length > 0) ? item.Images[0] : '';
         const el = document.createElement('div');
@@ -490,9 +498,14 @@ function updateCartUI() {
         `;
         cartList.appendChild(el);
     });
+    if (Type === "DELIVERY") {
+        subtotalEl.innerText = 'R' + subtotal.toFixed(2);
+        totalEl.innerText = 'R' + (subtotal + displayedDeliveryFee).toFixed(2);
+    }else{
+        subtotalEl.innerText = 'R' +0;
+        totalEl.innerText = 'R' + (subtotal ).toFixed(2);
+    }
 
-    subtotalEl.innerText = 'R' + displayedDeliveryFee.toFixed(2);
-    totalEl.innerText = 'R' + (subtotal + displayedDeliveryFee).toFixed(2);
 
     // Update Checkout Button Text
     const checkoutBtn = document.getElementById("checkout-btn");
@@ -535,82 +548,141 @@ function filterFood() {
     renderFood(currentFilter, searchVal);
 }
 
+let Type="DELIVERY";
+
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleContainer = document.getElementById('serviceToggle');
+  const buttons = toggleContainer.querySelectorAll('.toggle-btn');
+  buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+          const subtotalEl = document.getElementById('cartSubtotal');
+          const totalEl = document.getElementById('cartTotal');
+          const mode = btn.getAttribute('data-mode');
+          // 1. Update Active Class on buttons
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          // 2. Slide the background
+          if (mode === 'pickup') {
+              Type="PICKUP";
+              toggleContainer.classList.add('pickup-active');
+              subtotalEl.innerHTML="R "+0.00;
+              if(subtotal>0 && displayedDeliveryFee>0){
+                console.log("Displayed Fee is ",displayedDeliveryFee,"And Subtotal is",subtotal);
+
+                totalEl.innerHTML="R"+subtotal.toFixed(2);
+              }else{
+                totalEl.innerHTML="R"+subtotal.toFixed(2);
+              }
+              
+          } else {
+            Type="DELIVERY";
+            console.log("fee",displayedDeliveryFee);
+            subtotalEl.innerHTML="R "+displayedDeliveryFee.toFixed(2);
+            totalEl.innerHTML="R "+(subtotal+displayedDeliveryFee).toFixed(2);
+            
+            toggleContainer.classList.remove('pickup-active');
+          }
+          // 3. Optional: Logic to filter orders or change view
+          console.log("Switching mode to:", mode);
+          // filterOrders(mode); 
+      });
+  });
+});
+
+
 // --- SIDEBAR MOBILE ---
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
 }
-// --- CHECKOUT LOGIC ---
-document.getElementById("checkout-btn").addEventListener("click", () => {
-    // 1. Determine which items to checkout
-    const filteredOrders = currentCartStoreFilter === 'all' 
-        ? cart 
+document.getElementById("checkout-btn").addEventListener("click", async () => {
+    const filteredOrders = currentCartStoreFilter === 'all'
+        ? cart
         : cart.filter(item => item.storename === currentCartStoreFilter);
 
-    if (filteredOrders.length === 0) return alert("No items selected for checkout!");
+    if (filteredOrders.length === 0) {
+        alert("No items selected for checkout!");
+        return;
+    }
 
-    // Optional: Prevent checking out from "All" if you want to force store-by-store
-    if (currentCartStoreFilter === 'all' && [...new Set(cart.map(i => i.storename))].length > 1) {
-        return alert("Please select a specific store to checkout.");
+    if (
+        currentCartStoreFilter === 'all' &&
+        [...new Set(cart.map(i => i.storename))].length > 1
+    ) {
+        alert("Please select a specific store to checkout.");
+        return;
     }
 
     document.getElementById("loading").style.display = "flex";
 
-    // 2. Calculate totals for the SELECTED items only
+    let cookiesStr = JSON.parse(localStorage.getItem("Cookies")) || [];
+    let locationData;
+
+    try {
+        if (cookiesStr.length === 0) {
+            locationData = await init(); // ⬅️ WAIT HERE
+        } else {
+            locationData = cookiesStr[0];
+        }
+    } catch (err) {
+        document.getElementById("loading").style.display = "none";
+
+        alert(
+            err.code === 1
+                ? "Location permission denied. Please enable location access."
+                : "Unable to get your location. Please try again."
+        );
+        return;
+    }
+
+    // --- Totals ---
     let subtotal = 0;
     filteredOrders.forEach(item => {
         subtotal += parseFloat(item.SellingPrice) * item.qty;
     });
-    
-    // Use the delivery fee from the first item of this store group
-    const deliveryFee = filteredOrders[0].deliveryFee;
+
+    const deliveryFee = filteredOrders[0].deliveryFee||35;
     const finalTotal = subtotal + deliveryFee;
-
-    // 3. Location & Cookie Logic (Keep your existing check)
-    let cookiesStr = JSON.parse(localStorage.getItem("Cookies")) || [];
-    if (cookiesStr.length === 0) {
-        init();
-        document.getElementById("loading").style.display = "none";
-        return alert("Acquiring location... please try again in a moment.");
+    let location=locationData||null;
+    if(location==null){
+        alert("Please know That you've denied access to your location and we may not be able to pin down where your exact location!!!");
     }
-    let locationData = cookiesStr[0];
-
-    // 4. Send ONLY filtered items to the gateway
-    fetch("http://localhost:4000/gateway", {
+    fetch("/gateway", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ 
-            orders: filteredOrders, 
-            Total: finalTotal, 
-            location: locationData
+        body: JSON.stringify({
+            orders: filteredOrders,
+            Total: finalTotal,
+            location: locationData||null,
+            Type
         })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.Status) {
-            // 5. SUCCESS: Remove ONLY the purchased items from the cart
-            if (currentCartStoreFilter === 'all') {
-                cart = []; // If they checked out 'all', clear everything
-            } else {
-                // Keep items that belong to OTHER stores
-                cart = cart.filter(item => item.storename !== currentCartStoreFilter);
-            }
-            
-            saveCartToLocalStorage();
-            currentCartStoreFilter = 'all'; // Reset filter
-            updateCartUI();
-            
-            document.getElementById("loading").style.display = "none";
-            window.location.href = data.RedirectURL;
-        } else {
-            document.getElementById("loading").style.display = "none";
+        document.getElementById("loading").style.display = "none";
+
+        if (!data.Status) {
             alert("Checkout failed: " + (data.reason || "Unknown error"));
+            return;
         }
+
+        if (currentCartStoreFilter === 'all') {
+            cart = [];
+        } else {
+            cart = cart.filter(item => item.storename !== currentCartStoreFilter);
+        }
+
+        saveCartToLocalStorage();
+        currentCartStoreFilter = 'all';
+        updateCartUI();
+        window.location.href = data.RedirectURL;
     })
     .catch(err => {
         document.getElementById("loading").style.display = "none";
         console.error(err);
+        alert("Network error. Please try again.");
     });
 });
+
 
 // --- CLEAR CART FUNCTION (Optional) ---
 function clearCart() {
